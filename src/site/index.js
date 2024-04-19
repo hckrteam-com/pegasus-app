@@ -41,7 +41,11 @@ const main = async () => {
         //         ],
         //     },
         // });
-        const peer = new Peer();
+        const peer = new Peer({
+            host: "167.235.229.141",
+            port: "9876",
+            ssl: false,
+        });
 
         const calls = {}
 
