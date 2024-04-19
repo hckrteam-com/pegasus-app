@@ -1,17 +1,158 @@
 <!DOCTYPE html>
-<html>
+<html style="background-color: rgb(24 24 27);">
 
 <head>
-  <meta charset="UTF-8" />
-  <title>Hello World!</title>
-  <link rel="stylesheet" href="index.css" />
+  <meta charset="UTF-8">
+  <title>Pegasus RPC</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
   <script src="index.js" type="module" defer></script>
 </head>
 
 <body>
-  <label for="robloxId">Roblox ID: </label><input id="robloxId" name="robloxId"></input>
-  <button id="start">Połącz się!</button>
-  <div id="audios"></div>
+
+  <div style="margin:10vh">
+
+
+    <div class="container">
+      <h1 class="title">Pegasus Voice System</h1>
+      <form id="makerpc">
+  
+        <div class="field">
+
+
+
+          <!-- to twoje xd -->
+          <label class="label" for="robloxId">Roblox ID: </label>
+          <input class="input" id="robloxId" name="robloxId"></input>
+          <button class="button is-primary" id="start" style="background-color: rgb(107 33 168); margin-bottom: 3vh; margin-top: 2vh">Połącz się!</button>
+          <div id="audios"></div>
+
+
+
+
+          <label class="label">PlaceId</label>
+          <div class="control">
+            <input class="input" required="true" id="place_id" placeholder="PlaceId">
+          </div>
+        </div>
+        <button type="submit" id="submit2" class="button is-primary" style="background-color: rgb(107 33 168);">Set Status</button>
+  
+      </form>
+    </div>
+  
+
+
+  </div>
+
+
+
+
+  <script>
+    const form = document.getElementById('makerpc')
+    form.addEventListener('submit2', startrpc)
+    form.addEventListener('submit', startrpc2)
+
+
+    async function startrpc(event) {
+      event.preventDefault();
+      const clientid = document.getElementById('clientid').value;
+      const largeimage = document.getElementById('largeimage').value;
+      const smallimage = document.getElementById('smallimage').value;
+      const state = document.getElementById('state').value;
+      const details = document.getElementById('details').value;
+
+      const result = await fetch('http://localhost:3000/api/makerpc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          clientid,
+          largeimage,
+          smallimage,
+          state,
+          details
+        })
+      }).then((res) => res.json())
+      console.log(result)
+      if (result.status === "ok") {
+
+      } else {
+        alert(result.error)
+      }
+    }
+
+    async function startrpc2(event) {
+      event.preventDefault();
+      const place_id = document.getElementById('place_id').value;
+
+      const result = await fetch('http://localhost:3000/api/rpc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          place_id
+        })
+      }).then((res) => res.json())
+      console.log(result)
+      if (result.success == true) {
+
+      } else {
+        alert(result.error)
+      }
+    }
+  </script>
 </body>
+
+<style>
+  
+  .button {
+    background-color: #fff;
+    border-color: #dbdbdb;
+    border-width: 1px;
+    color: #363636;
+    cursor: pointer;
+    justify-content: center;
+    padding-bottom: calc(.5em - 1px);
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: calc(.5em - 1px);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .input, .select select, .textarea {
+    background-color: #fff;
+    border-color: #dbdbdb;
+    border-radius: 4px;
+    color: #363636;
+  }
+
+  .title {
+    color: #fffdfd;
+    font-size: 2rem;
+  }
+  
+  .label {
+    color: #dcdcdc;
+  }
+  
+  .input::placeholder, .select select::placeholder, .textarea::placeholder {
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .input, .select select, .textarea {
+    background-color: #00000050;
+    border-color: #dbdbdb;
+    border-radius: 4px;
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0px;
+  }
+</style>
 
 </html>
