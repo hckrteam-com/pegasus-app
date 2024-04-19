@@ -242,9 +242,6 @@ server.listen(3000, () => {
   console.log('Listening at http://localhost:3000')
 })
 
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and import them here.
 async function getPlaceData(universe_id){
   let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
   .then(response => response.json())
@@ -257,8 +254,6 @@ async function getPlaceData(universe_id){
   })
   return response
 }
-
-
 
 async function getUniverseId(place_id){
   let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
