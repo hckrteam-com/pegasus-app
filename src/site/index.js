@@ -70,7 +70,8 @@ const main = async () => {
 
             gain.gain.value = 1;
 
-            source = audioContext.createMediaStreamSource(stream);
+            const source = audioContext.createMediaStreamSource(stream);
+            console.log(source)
 
             const audio = document.createElement("audio")
             audio.srcObject = source.mediaStream;
