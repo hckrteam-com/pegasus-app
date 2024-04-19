@@ -24,7 +24,7 @@ const main = async () => {
 
         const stream = await getMicStream()
         const robloxId = parseInt(document.getElementById("robloxId").value)
-        if (stream) return console.log("Brak mikrofonu lub permisji do niego!")
+        if (!stream) return console.log("Brak mikrofonu lub permisji do niego!")
         if (!robloxId) return
 
         // const peer = new Peer( {
