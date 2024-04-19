@@ -2,6 +2,10 @@ const { app, BrowserWindow, systemPreferences } = require('electron');
 const path = require('node:path');
 const crypto = require('crypto');
 
+const RichPresence = require("rich-presence-builder")
+const express = require('express')
+const server = express();
+
 const iconPath = path.join(__dirname, './icons/pegasus.ico');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -52,3 +56,220 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+server.use(express.json())
+
+server.post('/api/rpc', async (req, res) => {
+
+  const { place_id } = req.body;
+
+  const clientid = "776903824567697478"
+
+  let largeimage = "placeholder_game_logo"
+  let smallimage = "icon-pegasus"
+  let state = "0 Players"
+  let details = "Playing Example Game"
+
+  if (largeimage === "placeholder_game_logo") {
+    smallimage = ""
+  }
+
+  let universe_id
+  let placeData
+
+  let gamename = ""
+  let players = 0
+  
+  if (place_id) {
+    universe_id = await getUniverseId(place_id)
+    console.log(await universe_id)
+    placeData = await getPlaceData(universe_id)
+    console.log(await placeData)
+    await res.send({success: true, data: { universe_id, placeData }})
+
+    if (placeData.name.includes(']')) {
+      console.log(placeData.name)
+      gamename = placeData.name.split(']')[1]
+    }else{
+      gamename = placeData.name
+    }
+    players = placeData.playing
+
+    details = "Playing " + gamename
+    state = players.toString() + " Players"
+
+  }
+
+  new RichPresence({ clientID: clientid })
+  .setLargeImage(largeimage, "Rich Presence Electron")
+  .setSmallImage(smallimage, "https://pegasus.bot")
+  .setState(state)
+  .setDetails(details)
+  // .setContextMenu([
+  //   {
+  //     label: "Join Game",
+  //     url: `https://www.roblox.com/games/${place_id}`
+  //   }
+  // ])
+  .setStartTimestamp(Date.now())
+  //.setEndTimestamp(Date.now() + 60000)
+  .addButton("Game", "roblox://placeId="+place_id.toString())
+  .addButton("Discord", "https://hckrteam.com")
+  .go()
+
+  const notif = new Notification({
+    icon: iconPath,
+    title: 'Pegasus System',
+    subtitle: 'Pegasus System',
+    body: 'Rich Presence has been started!',
+  });
+
+  notif.show()
+
+})
+
+server.post('/api/makerpc', (req, res) => {
+ res.send('Created RPC')
+ const { clientid, largeimage, smallimage, state, details} = req.body;
+ if(state !== "" || details !== "") {
+  new RichPresence({ clientID: clientid })
+  .setLargeImage(largeimage, "Made by Rich Presence Electron")
+  .setSmallImage(smallimage, "https://github.com/DiscordAddons/RichPresenceElectron")
+  .setState(state)
+  .setDetails(details)
+  .go()
+
+  const notif = new Notification({
+    icon: iconPath,
+    title: 'Started Rich Presence!',
+    subtitle: 'RichPresence',
+    body: 'Rich Presence has been started!',
+  });
+
+  notif.show();
+
+ } else {
+  new RichPresence({ clientID: clientid })
+  .setLargeImage(largeimage, "Made by Rich Presence Electron")
+  .setSmallImage(smallimage, "https://github.com/DiscordAddons/RichPresenceElectron")
+  .go()
+
+  const notif = new Notification({
+    icon: iconPath,
+    title: 'Started Rich Presence!',
+    subtitle: 'RichPresence',
+    body: 'Rich Presence has been started!',
+  });
+
+  notif.show()
+ } 
+})
+
+server.listen(3000, () => {
+  console.log('Listening at http://localhost:3000')
+})
+
+
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and import them here.
+async function getPlaceData(universe_id){
+  let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
+  .then(response => response.json())
+  .then(data => {
+    //console.log(data)
+    return data.data[0]
+  })
+  .catch(err => {
+    console.log(err)
+  })
+  return response
+}
+
+
+
+async function getUniverseId(place_id){
+  let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
+  .then(response => response.json())
+  .then(data => {
+    //console.log(data)
+    //console.log(data.universeId)
+    return data.universeId
+  })
+  .catch(err => {
+    console.log(err)
+  })
+  return response
+}
