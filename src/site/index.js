@@ -27,21 +27,21 @@ const main = async () => {
         if (!stream) return console.log("Brak mikrofonu lub permisji do niego!")
         if (!robloxId) return
 
-        // const peer = new Peer( {
-        //     config: {
-        //         iceServers: [
-        //             {
-        //                 urls: "stun:stun.l.google.com:19302",
-        //             },
-        //             {
-        //                 url: "turn:numb.viagenie.ca",
-        //                 credential: "muazkh",
-        //                 username: "webrtc@live.com",
-        //             },
-        //         ],
-        //     },
-        // });
-        const peer = new Peer();
+        const peer = new Peer({
+            config: {
+                iceServers: [
+                    {
+                        urls: "stun:stun.l.google.com:19302",
+                    },
+                    {
+                        url: "turn:numb.viagenie.ca",
+                        credential: "muazkh",
+                        username: "webrtc@live.com",
+                    },
+                ],
+            },
+        });
+        // const peer = new Peer();
 
         const calls = {}
 
@@ -112,11 +112,11 @@ const main = async () => {
 
                 socket.on("update-users", ({ usersData }) => {
                     console.log(usersData)
-                    for (let [peerId, { position, callType }] of Object.entries(usersData)) {
+                    for (let [peerId, { position, type }] of Object.entries(usersData)) {
                         if (calls[peerId]) {
                             updateAudio(peerId, position)
                         } else {
-                            if (callType === "call") {
+                            if (type === "call") {
                                 calls[peerId] = {}
                                 const call = peer.call(peerId, stream)
                                 call.on("stream", (otherStream) => {
