@@ -1,4 +1,4 @@
-const { app, BrowserWindow, systemPreferences } = require('electron');
+const { app, BrowserWindow, systemPreferences, Notification } = require('electron');
 const path = require('node:path');
 const crypto = require('crypto');
 
@@ -201,42 +201,6 @@ server.post('/api/rpc', async (req, res) => {
 
 })
 
-server.post('/api/makerpc', (req, res) => {
- res.send('Created RPC')
- const { clientid, largeimage, smallimage, state, details} = req.body;
- if(state !== "" || details !== "") {
-  new RichPresence({ clientID: clientid })
-  .setLargeImage(largeimage, "Made by Rich Presence Electron")
-  .setSmallImage(smallimage, "https://github.com/DiscordAddons/RichPresenceElectron")
-  .setState(state)
-  .setDetails(details)
-  .go()
-
-  const notif = new Notification({
-    icon: iconPath,
-    title: 'Started Rich Presence!',
-    subtitle: 'RichPresence',
-    body: 'Rich Presence has been started!',
-  });
-
-  notif.show();
-
- } else {
-  new RichPresence({ clientID: clientid })
-  .setLargeImage(largeimage, "Made by Rich Presence Electron")
-  .setSmallImage(smallimage, "https://github.com/DiscordAddons/RichPresenceElectron")
-  .go()
-
-  const notif = new Notification({
-    icon: iconPath,
-    title: 'Started Rich Presence!',
-    subtitle: 'RichPresence',
-    body: 'Rich Presence has been started!',
-  });
-
-  notif.show()
- } 
-})
 
 server.listen(3000, () => {
   console.log('Listening at http://localhost:3000')
