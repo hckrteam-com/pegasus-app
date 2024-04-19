@@ -27,20 +27,21 @@ const main = async () => {
         if (!localStream) return console.log("Brak mikrofonu lub permisji do niego!")
         if (!robloxId) return
 
-        const peer = new Peer({
-            config: {
-                iceServers: [
-                    {
-                        urls: "stun:stun.l.google.com:19302",
-                    },
-                    {
-                        url: "turn:numb.viagenie.ca",
-                        credential: "muazkh",
-                        username: "webrtc@live.com",
-                    },
-                ],
-            },
-        });
+        // const peer = new Peer({
+        //     config: {
+        //         iceServers: [
+        //             {
+        //                 urls: "stun:stun.l.google.com:19302",
+        //             },
+        //             {
+        //                 url: "turn:numb.viagenie.ca",
+        //                 credential: "muazkh",
+        //                 username: "webrtc@live.com",
+        //             },
+        //         ],
+        //     },
+        // });
+        const peer = new Peer();
 
         const calls = {}
 
