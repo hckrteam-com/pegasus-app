@@ -51,41 +51,42 @@ const main = async () => {
 
         const audioContext = new (window.AudioContext || window.webkitAudioContext)()
         const createAudio = (id, stream) => {
-            console.log('create audio')
-            const gain = new GainNode(audioContext)
-            calls[id].gain = gain
-            const panner = new PannerNode(audioContext, {
-                panningModel: "HRTF",
-                distanceModel: "linear",
-                positionX: 0,
-                positionY: 0,
-                positionZ: 0,
-                orientationX: 0,
-                orientationY: 0,
-                orientationZ: -1,
-                refDistance: 1,
-                maxDistance: 100,
-                rolloffFactor: 20,
-                coneInnerAngle: 40,
-                coneOuterAngle: 50,
-                coneOuterGain: 0.4,
-            })
-            calls[id].panner = panner
+            // console.log('create audio')
+            // const gain = new GainNode(audioContext)
+            // calls[id].gain = gain
+            // const panner = new PannerNode(audioContext, {
+            //     panningModel: "HRTF",
+            //     distanceModel: "linear",
+            //     positionX: 0,
+            //     positionY: 0,
+            //     positionZ: 0,
+            //     orientationX: 0,
+            //     orientationY: 0,
+            //     orientationZ: -1,
+            //     refDistance: 1,
+            //     maxDistance: 100,
+            //     rolloffFactor: 20,
+            //     coneInnerAngle: 40,
+            //     coneOuterAngle: 50,
+            //     coneOuterGain: 0.4,
+            // })
+            // calls[id].panner = panner
 
-            gain.gain.value = 1;
+            // gain.gain.value = 1;
 
-            const source = audioContext.createMediaStreamSource(stream);
+            // const source = audioContext.createMediaStreamSource(stream);
             // console.log(source)
 
             const audio = document.createElement("audio")
-            audio.srcObject = source.mediaStream;
-            // audio.srcObject = stream;
-            // audio.play()
+            // audio.srcObject = source.mediaStream;
+            audio.srcObject = stream;
+            audio.play()
 
-            source.connect(panner).connect(gain).connect(audioContext.destination);
-            audioContext.resume();
+            // source.connect(panner).connect(gain).connect(audioContext.destination);
+            // audioContext.resume();
 
             document.body.append(audio)
+            audio.play()
             calls[id].audio = audio;
         }
 
