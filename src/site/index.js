@@ -130,7 +130,7 @@ const main = async () => {
                         } else if (!calls[peerId] && type === "call") {
                             console.log('call someone')
                             calls[peerId] = {}
-                            const call = peer.call(peerId, stream)
+                            const call = peer.call(peerId, localStream)
                             call.on("stream", (otherStream) => {
                                 console.log('received call with stream', otherStream)
                                 calls[peerId].call = call;
@@ -150,7 +150,7 @@ const main = async () => {
 
         peer.on("call", (call) => {
             console.log("received call")
-            call.answer(stream)
+            call.answer(localStream)
 
             call.on("stream", (otherStream) => {
                 console.log('received call with stream', otherStream)
