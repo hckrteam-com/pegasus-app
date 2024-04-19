@@ -51,6 +51,7 @@ const main = async () => {
 
         const audioContext = new (window.AudioContext || window.webkitAudioContext)()
         const createAudio = (id, stream) => {
+            console.log('createAudio', id, stream)
             // console.log('create audio')
             // const gain = new GainNode(audioContext)
             // calls[id].gain = gain
