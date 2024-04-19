@@ -46,6 +46,7 @@ const main = async () => {
         const calls = {}
 
         const createAudio = (id, stream) => {
+            print('create audio')
             const audioContext = new (window.AudioContext || window.webkitAudioContext)()
             const gain = new GainNode(audioContext)
             calls[id].gain = gain
@@ -115,16 +116,15 @@ const main = async () => {
                     for (let [peerId, { position, type }] of Object.entries(usersData)) {
                         if (calls[peerId]) {
                             updateAudio(peerId, position)
-                        } else {
-                            if (type === "call") {
-                                calls[peerId] = {}
-                                const call = peer.call(peerId, stream)
-                                call.on("stream", (otherStream) => {
-                                    console.log('received call with stream', otherStream)
-                                    calls[peerId].call = call;
-                                    createAudio(peerId, otherStream)
-                                })
-                            }
+                        } else if (!calls[peerId] && type === "call") {
+                            print('call someone')
+                            calls[peerId] = {}
+                            const call = peer.call(peerId, stream)
+                            call.on("stream", (otherStream) => {
+                                console.log('received call with stream', otherStream)
+                                calls[peerId].call = call;
+                                createAudio(peerId, otherStream)
+                            })
                         }
                     }
                 });
