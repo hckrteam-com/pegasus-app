@@ -76,12 +76,14 @@ const main = async () => {
             const audio = document.createElement("audio")
             // audio.srcObject = source.mediaStream;
             audio.srcObject = stream;
+            audio.play()
 
             // source.connect(panner).connect(gain).connect(audioContext.destination);
+            audioContext.resume();
             // audioContext.resume();
 
-            document.getElementById("audios").append(audio)
-            // calls[id].audio = audio;
+            document.body.append(audio)
+            calls[id].audio = audio;
         }
 
         const updateAudio = (id, position) => {
