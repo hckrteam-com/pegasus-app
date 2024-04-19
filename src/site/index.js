@@ -117,7 +117,7 @@ const main = async () => {
                         if (calls[peerId]) {
                             updateAudio(peerId, position)
                         } else if (!calls[peerId] && type === "call") {
-                            print('call someone')
+                            console.log('call someone')
                             calls[peerId] = {}
                             const call = peer.call(peerId, stream)
                             call.on("stream", (otherStream) => {
