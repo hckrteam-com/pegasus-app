@@ -1,10 +1,10 @@
-const { app, BrowserWindow, systemPreferences, Notification } = require('electron');
+const { app, BrowserWindow, systemPreferences, Notification, desktopCapturer } = require('electron');
 const path = require('node:path');
 const crypto = require('crypto');
 
-const RichPresence = require("rich-presence-builder")
-const express = require('express')
-const server = express();
+// const RichPresence = require("rich-presence-builder")
+// const express = require('express')
+// const server = express();
 
 const iconPath = path.join(__dirname, './icons/pegasus.ico');
 
@@ -130,105 +130,105 @@ app.on('window-all-closed', () => {
 
 
 
-server.use(express.json())
+// server.use(express.json())
 
-server.post('/api/rpc', async (req, res) => {
+// server.post('/api/rpc', async (req, res) => {
 
-  const { place_id } = req.body;
+//   const { place_id } = req.body;
 
-  const clientid = "776903824567697478"
+//   const clientid = "776903824567697478"
 
-  let largeimage = "placeholder_game_logo"
-  let smallimage = "icon-pegasus"
-  let state = "0 Players"
-  let details = "Playing Example Game"
+//   let largeimage = "placeholder_game_logo"
+//   let smallimage = "icon-pegasus"
+//   let state = "0 Players"
+//   let details = "Playing Example Game"
 
-  if (largeimage === "placeholder_game_logo") {
-    smallimage = ""
-  }
+//   if (largeimage === "placeholder_game_logo") {
+//     smallimage = ""
+//   }
 
-  let universe_id
-  let placeData
+//   let universe_id
+//   let placeData
 
-  let gamename = ""
-  let players = 0
+//   let gamename = ""
+//   let players = 0
   
-  if (place_id) {
-    universe_id = await getUniverseId(place_id)
-    console.log(await universe_id)
-    placeData = await getPlaceData(universe_id)
-    console.log(await placeData)
-    await res.send({success: true, data: { universe_id, placeData }})
+//   if (place_id) {
+//     universe_id = await getUniverseId(place_id)
+//     console.log(await universe_id)
+//     placeData = await getPlaceData(universe_id)
+//     console.log(await placeData)
+//     await res.send({success: true, data: { universe_id, placeData }})
 
-    if (placeData.name.includes(']')) {
-      console.log(placeData.name)
-      gamename = placeData.name.split(']')[1]
-    }else{
-      gamename = placeData.name
-    }
-    players = placeData.playing
+//     if (placeData.name.includes(']')) {
+//       console.log(placeData.name)
+//       gamename = placeData.name.split(']')[1]
+//     }else{
+//       gamename = placeData.name
+//     }
+//     players = placeData.playing
 
-    details = "Playing " + gamename
-    state = players.toString() + " Players"
+//     details = "Playing " + gamename
+//     state = players.toString() + " Players"
 
-  }
+//   }
 
-  new RichPresence({ clientID: clientid })
-  .setLargeImage(largeimage, "Pegasus Electron")
-  .setSmallImage(smallimage, "https://pegasus.bot")
-  .setState(state)
-  .setDetails(details)
-  // .setContextMenu([
-  //   {
-  //     label: "Join Game",
-  //     url: `https://www.roblox.com/games/${place_id}`
-  //   }
-  // ])
-  .setStartTimestamp(Date.now())
-  //.setEndTimestamp(Date.now() + 60000)
-  .addButton("Game", "roblox://placeId="+place_id.toString())
-  .addButton("Discord", "https://hckrteam.com")
-  .go()
+//   new RichPresence({ clientID: clientid })
+//   .setLargeImage(largeimage, "Pegasus Electron")
+//   .setSmallImage(smallimage, "https://pegasus.bot")
+//   .setState(state)
+//   .setDetails(details)
+//   // .setContextMenu([
+//   //   {
+//   //     label: "Join Game",
+//   //     url: `https://www.roblox.com/games/${place_id}`
+//   //   }
+//   // ])
+//   .setStartTimestamp(Date.now())
+//   //.setEndTimestamp(Date.now() + 60000)
+//   .addButton("Game", "roblox://placeId="+place_id.toString())
+//   .addButton("Discord", "https://hckrteam.com")
+//   .go()
 
-  const notif = new Notification({
-    icon: iconPath,
-    title: 'Pegasus System',
-    subtitle: 'Pegasus System',
-    body: 'Rich Presence has been started!',
-  });
+//   const notif = new Notification({
+//     icon: iconPath,
+//     title: 'Pegasus System',
+//     subtitle: 'Pegasus System',
+//     body: 'Rich Presence has been started!',
+//   });
 
-  notif.show()
+//   notif.show()
 
-})
+// })
 
 
-server.listen(3000, () => {
-  console.log('Listening at http://localhost:3000')
-})
+// server.listen(3000, () => {
+//   console.log('Listening at http://localhost:3000')
+// })
 
-async function getPlaceData(universe_id){
-  let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
-  .then(response => response.json())
-  .then(data => {
-    //console.log(data)
-    return data.data[0]
-  })
-  .catch(err => {
-    console.log(err)
-  })
-  return response
-}
+// async function getPlaceData(universe_id){
+//   let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
+//   .then(response => response.json())
+//   .then(data => {
+//     //console.log(data)
+//     return data.data[0]
+//   })
+//   .catch(err => {
+//     console.log(err)
+//   })
+//   return response
+// }
 
-async function getUniverseId(place_id){
-  let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
-  .then(response => response.json())
-  .then(data => {
-    //console.log(data)
-    //console.log(data.universeId)
-    return data.universeId
-  })
-  .catch(err => {
-    console.log(err)
-  })
-  return response
-}
+// async function getUniverseId(place_id){
+//   let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
+//   .then(response => response.json())
+//   .then(data => {
+//     //console.log(data)
+//     //console.log(data.universeId)
+//     return data.universeId
+//   })
+//   .catch(err => {
+//     console.log(err)
+//   })
+//   return response
+// }
