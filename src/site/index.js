@@ -144,6 +144,7 @@ const main = async () => {
         })
 
         peer.on("call", (call) => {
+            console.log("received call")
             call.answer(stream)
 
             call.on("stream", (otherStream) => {
