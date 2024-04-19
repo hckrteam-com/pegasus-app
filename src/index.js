@@ -174,7 +174,7 @@ server.post('/api/rpc', async (req, res) => {
   }
 
   new RichPresence({ clientID: clientid })
-  .setLargeImage(largeimage, "Rich Presence Electron")
+  .setLargeImage(largeimage, "Pegasus Electron")
   .setSmallImage(smallimage, "https://pegasus.bot")
   .setState(state)
   .setDetails(details)
