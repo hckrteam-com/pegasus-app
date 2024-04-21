@@ -48,13 +48,31 @@ const main = async () => {
             config: {
                 iceServers: [
                     {
-                        urls: "stun:stun.l.google.com:19302",
+                        url: 'stun.l.google.com:19302',
+                        urls: 'stun.l.google.com:19302'
                     },
                     {
-                        url: "turn:numb.viagenie.ca",
-                        credential: "muazkh",
-                        username: "webrtc@live.com",
+                        url: 'stun:global.stun.twilio.com:3478',
+                        urls: 'stun:global.stun.twilio.com:3478'
                     },
+                    {
+                        url: 'turn:global.turn.twilio.com:3478?transport=udp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                    },
+                    {
+                        url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                    },
+                    {
+                        url: 'turn:global.turn.twilio.com:443?transport=tcp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                    }
                 ],
             },
         });
@@ -64,42 +82,42 @@ const main = async () => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)()
         const createAudio = (id, stream) => {
             console.log('createAudio', id, stream)
-            // console.log('create audio')
-            // const gain = new GainNode(audioContext)
-            // calls[id].gain = gain
-            // const panner = new PannerNode(audioContext, {
-            //     panningModel: "HRTF",
-            //     distanceModel: "linear",
-            //     positionX: 0,
-            //     positionY: 0,
-            //     positionZ: 0,
-            //     orientationX: 0,
-            //     orientationY: 0,
-            //     orientationZ: -1,
-            //     refDistance: 1,
-            //     maxDistance: 100,
-            //     rolloffFactor: 20,
-            //     coneInnerAngle: 40,
-            //     coneOuterAngle: 50,
-            //     coneOuterGain: 0.4,
-            // })
-            // calls[id].panner = panner
+            console.log('create audio')
+            const gain = new GainNode(audioContext)
+            calls[id].gain = gain
+            const panner = new PannerNode(audioContext, {
+                panningModel: "HRTF",
+                distanceModel: "linear",
+                positionX: 0,
+                positionY: 0,
+                positionZ: 0,
+                orientationX: 0,
+                orientationY: 0,
+                orientationZ: -1,
+                refDistance: 1,
+                maxDistance: 100,
+                rolloffFactor: 20,
+                coneInnerAngle: 40,
+                coneOuterAngle: 50,
+                coneOuterGain: 0.4,
+            })
+            calls[id].panner = panner
 
-            // gain.gain.value = 1;
+            gain.gain.value = 1;
 
-            // const source = audioContext.createMediaStreamSource(stream);
-            // console.log(source)
+            const source = audioContext.createMediaStreamSource(stream);
+            console.log(source)
 
-            const audio = document.createElement("audio")
-            // audio.srcObject = source.mediaStream;
-            audio.srcObject = stream;
-            audio.play()
+            const audio = document.createElement("video")
+            audio.srcObject = source.mediaStream;
+            // audio.srcObject = stream;
+            // audio.play()
 
-            // source.connect(panner).connect(gain).connect(audioContext.destination);
-            // audioContext.resume();
+            source.connect(panner).connect(gain).connect(audioContext.destination);
+            audioContext.resume();
 
             document.body.append(audio)
-            audio.play()
+            // audio.play()
             calls[id].audio = audio;
         }
 
