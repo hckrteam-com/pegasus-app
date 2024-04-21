@@ -48,10 +48,6 @@ const main = async () => {
             config: {
                 iceServers: [
                     {
-                        url: 'stun.l.google.com:19302',
-                        urls: 'stun.l.google.com:19302'
-                    },
-                    {
                         url: 'stun:global.stun.twilio.com:3478',
                         urls: 'stun:global.stun.twilio.com:3478'
                     },
