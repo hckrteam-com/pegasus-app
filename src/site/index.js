@@ -123,7 +123,7 @@ const main = async () => {
             console.log(peerId)
 
             const socket = new io("https://socket.pegasus.bot", {
-                reconnection: false,
+                reconnect: false,
                 query: {
                     peer_id: peerId,
                     roblox_id: robloxId,
