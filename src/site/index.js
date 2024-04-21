@@ -139,7 +139,7 @@ const main = async () => {
                 }, 500);
 
 
-                socket.on("update-users", ({ usersData }) => {
+                socket.on("update-users", ({ usersData }, ackFn) => {
                     console.log(usersData)
                     for (let [peerId, { position, type }] of Object.entries(usersData)) {
                         if (calls[peerId]) {
@@ -155,6 +155,7 @@ const main = async () => {
                             })
                         }
                     }
+                    ackFn(true);
                 });
             })
             socket.on("connect_error", (err) => {

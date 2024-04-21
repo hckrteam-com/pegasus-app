@@ -167,7 +167,6 @@
     }
 
     let microphones = [[""]]
-
     const devices = await navigator.mediaDevices.enumerateDevices()
 
     devices.forEach((device) => {
@@ -286,7 +285,8 @@
               })
             })
           })
-          peer.on("error", () => {
+          peer.on("error", (err) => {
+            console.log(err)
             for (let callId of Object.keys(calls)) {
               removeAudio(callId)
             }
@@ -306,7 +306,7 @@
     if (!searchingPage.hidden && localPeer) {
       if (!socket) {
         const _socket = new io("https://socket.pegasus.bot", {
-          reconnection: true,
+          // reconnection: true,
           query: {
             peer_id: localPeer.id,
             roblox_id: robloxId,
@@ -316,11 +316,12 @@
           socket = _socket;
           console.log('connected to socket')
 
-          setInterval(() => {
-            _socket.emit("active");
-          }, 500);
+          // setInterval(() => {
+          //   _socket.emit("active");
+          // }, 500);
 
           _socket.on("update-users", ({ usersData }) => {
+            console.log(usersData)
             showPage(vcPage)
             for (let [peerId, { position, type }] of Object.entries(usersData)) {
               if (calls[peerId]) {
