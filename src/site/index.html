@@ -63,7 +63,7 @@
 
 <script defer type="module">
 
-  import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+  import { io } from "https://cdn.socket.io/4.5.4/socket.io.esm.min.js";
   import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
 
   if (localStorage.getItem("robloxId")) {
@@ -320,7 +320,7 @@
           //   _socket.emit("active");
           // }, 500);
 
-          _socket.on("update-users", ({ usersData }) => {
+          _socket.on("update-users", ({ usersData }, response) => {
             console.log(usersData)
             showPage(vcPage)
             for (let [peerId, { position, type }] of Object.entries(usersData)) {
@@ -337,6 +337,7 @@
                 })
               }
             }
+            response(true)
           });
           debounce = false
         })
