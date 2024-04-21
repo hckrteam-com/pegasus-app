@@ -27,20 +27,14 @@ const main = async () => {
         if (!localStream) return console.log("Brak mikrofonu lub permisji do niego!")
         if (!robloxId) return
 
-        // const peer = new Peer({
-        //     config: {
-        //         iceServers: [
-        //             {
-        //                 urls: "stun:stun.l.google.com:19302",
-        //             },
-        //             {
-        //                 url: "turn:numb.viagenie.ca",
-        //                 credential: "muazkh",
-        //                 username: "webrtc@live.com",
-        //             },
-        //         ],
-        //     },
-        // });
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            devices.forEach((device) => {
+                if (device.kind === "audioinput") {
+                    console.log(device)
+                }
+            })
+        })
+
         const peer = new Peer({
             host: "167.235.229.141",
             port: "9876",
@@ -78,15 +72,14 @@ const main = async () => {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)()
         const createAudio = (id, stream) => {
             console.log('createAudio', id, stream)
-            console.log('create audio')
             const gain = new GainNode(audioContext)
             calls[id].gain = gain
             const panner = new PannerNode(audioContext, {
                 panningModel: "HRTF",
                 distanceModel: "linear",
-                positionX: 0,
-                positionY: 0,
-                positionZ: 0,
+                positionX: 1000000,
+                positionY: 1000000,
+                positionZ: 1000000,
                 orientationX: 0,
                 orientationY: 0,
                 orientationZ: -1,
@@ -102,18 +95,14 @@ const main = async () => {
             gain.gain.value = 1;
 
             const source = audioContext.createMediaStreamSource(stream);
-            console.log(source)
 
             const audio = document.createElement("video")
             audio.srcObject = source.mediaStream;
-            // audio.srcObject = stream;
-            // audio.play()
 
             source.connect(panner).connect(gain).connect(audioContext.destination);
             audioContext.resume();
 
             document.body.append(audio)
-            // audio.play()
             calls[id].audio = audio;
         }
 

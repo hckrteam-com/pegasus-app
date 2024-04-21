@@ -5,126 +5,341 @@
   <meta charset="UTF-8">
   <title>Pegasus RPC</title>
   <link rel="stylesheet" href="index.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
-  <script src="index.js" type="module" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- <script src="index.js" type="module" defer></script> -->
 </head>
 
-<body>
-
-  <div style="margin:10vh">
-
-
-    <div class="container">
-      <h1 class="title">Pegasus Voice System</h1>
-
-        <div class="field">
-        
-          <label class="label">RobloxId</label>
-          <input class="input" id="robloxId" placeholder="RobloxId">327155328</input>
-
-        </div>
-        <button class="button is-primary" id="start" style="background-color: rgb(107 33 168); margin-bottom: 3vh;">Połącz się!</button>
-  
-        <div id="audios"></div>
-
-        <div class="field">
-        
-          <label class="label">PlaceId</label>
-          <input class="input" id="place_id" placeholder="PlaceId">15710017589</input>
-
-        </div>
-        <button id="submit" class="button is-primary" style="background-color: rgb(107 33 168); margin-bottom: 3vh;">Set Status</button>
-  
-
-    </div>
-  
+<body class="m-4">
+  <div class="flex justify-center items-center h-20 flex-col">
+    <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
-
-
-
-
-  <script>
-    //document.getElementById('submit').addEventListener('submit', startrpc)
-
-
-
-    document.getElementById("submit").addEventListener("click", function() {
-      console.log("chujjj")
-      startrpc()
-    });
-
-    async function startrpc() {
-      //event.preventDefault();
-      const place_id = document.getElementById('place_id').value;
-
-      const result = await fetch('http://localhost:3000/api/rpc', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          place_id
-        })
-      }).then((res) => res.json())
-      console.log(result)
-      if (result.success == true) {
-
-      } else {
-        alert(result.error)
-      }
-    }
-
-  
-  </script>
+  <div id="startPage" hidden>
+    <div class="flex justify-center items-center h-40 flex-col">
+      <h1 class="text-white mb-4 select-none">Podaj RobloxID:</h1>
+      <input id="robloxId"
+        class="bg-darkgray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        type="text">
+      </input>
+      <button class="mt-4 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200"
+        id="start">Rozpocznij</button>
+    </div>
+  </div>
+  <div id="microphonePage" hidden>
+    <div class="flex items-center h-40 flex-col mt-10">
+      <h1 class="text-white mb-4 select-none">Wybierz mikrofon:</h1>
+      <select id="microphones"
+        class="bg-darkgray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option>Nie wybrano</option>
+        <option>USB 1</option>
+      </select>
+      <button
+        class="mt-2 py-1 px-4 text-md rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
+        id="microphoneTest" hidden>Testuj mikrofon</button>
+      <button hidden
+        class="mt-8 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
+        id="microphoneContinue">Dalej</button>
+    </div>
+  </div>
+  <div id="searchingPage" hidden>
+    <div class="flex justify-center items-center h-72 flex-col">
+      <h1 class="text-white mb-4 select-none">Wyszukiwanie serwera...</h1>
+      <svg class="circular-loader w-10 h-10" viewBox="25 25 50 50">
+        <circle class="loader-path" cx="50" cy="50" r="20" fill="none" stroke="#70c542" stroke-width="2" />
+      </svg>
+      <h1 class="text-white mb-4 text-sm opacity-15 text-center mt-4 select-none">Dołącz na serwer z podpiętym naszym
+        systemem VC
+      </h1>
+    </div>
+  </div>
+  <div id="vcPage" hidden>
+    <div class="flex justify-center items-center h-72 flex-col">
+      <h1 class="text-white mb-4 select-none">Poprawnie połączono z kanałem głosowym :)</h1>
+    </div>
+  </div>
+  <audio id="localStream" autoplay muted></audio>
+  <div id="audios">
+  </div>
 </body>
 
-<style>
-  
-  .button {
-    background-color: #fff;
-    border-color: #dbdbdb;
-    border-width: 1px;
-    color: #363636;
-    cursor: pointer;
-    justify-content: center;
-    padding-bottom: calc(.5em - 1px);
-    padding-left: 1em;
-    padding-right: 1em;
-    padding-top: calc(.5em - 1px);
-    text-align: center;
-    white-space: nowrap;
+<script defer type="module">
+
+  import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+  import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
+
+  if (localStorage.getItem("robloxId")) {
+    document.getElementById("robloxId").value = localStorage.getItem("robloxId")
   }
 
-  .input, .select select, .textarea {
-    background-color: #fff;
-    border-color: #dbdbdb;
-    border-radius: 4px;
-    color: #363636;
+  const startPage = document.getElementById("startPage")
+  const microphonePage = document.getElementById("microphonePage")
+  const searchingPage = document.getElementById("searchingPage")
+  const vcPage = document.getElementById("vcPage")
+
+  let debounce = false;
+  let robloxId
+  let localStream
+  let localPeer
+  let peer
+  let socket
+  let calls = {}
+
+  const showPage = (page) => {
+    startPage.hidden = page == startPage ? false : true
+    microphonePage.hidden = page == microphonePage ? false : true
+    searchingPage.hidden = page == searchingPage ? false : true
+    vcPage.hidden = page == vcPage ? false : true
+  };
+
+  showPage(startPage);
+
+  const reset = () => {
+    reload()
   }
 
-  .title {
-    color: #fffdfd;
-    font-size: 2rem;
-  }
-  
-  .label {
-    color: #dcdcdc;
-  }
-  
-  .input::placeholder, .select select::placeholder, .textarea::placeholder {
-    color: rgba(255, 255, 255, 0.62);
+  const createAudio = (id, stream) => {
+    console.log('createAudio', id, stream)
+    const gain = new GainNode(audioContext)
+    calls[id].gain = gain
+    const panner = new PannerNode(audioContext, {
+      panningModel: "HRTF",
+      distanceModel: "linear",
+      positionX: 1000000,
+      positionY: 1000000,
+      positionZ: 1000000,
+      orientationX: 0,
+      orientationY: 0,
+      orientationZ: -1,
+      refDistance: 1,
+      maxDistance: 100,
+      rolloffFactor: 20,
+      coneInnerAngle: 40,
+      coneOuterAngle: 50,
+      coneOuterGain: 0.4,
+    })
+    calls[id].panner = panner
+
+    gain.gain.value = 1;
+
+    const source = audioContext.createMediaStreamSource(stream);
+
+    const audio = document.createElement("video")
+    audio.srcObject = source.mediaStream;
+
+    source.connect(panner).connect(gain).connect(audioContext.destination);
+    audioContext.resume();
+
+    document.getElementById("audios").append(audio)
+    calls[id].audio = audio;
   }
 
-  .input, .select select, .textarea {
-    background-color: #00000050;
-    border-color: #dbdbdb;
-    border-radius: 4px;
-    color: #fff;
+  const updateAudio = (id, position) => {
+    if (calls[id] && calls[id].gain && calls[id].panner) {
+      //update
+      calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
+      calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
+      calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+    }
   }
 
-  ::-webkit-scrollbar {
-    width: 0px;
+  const removeAudio = (id) => {
+    if (calls[id]) {
+      if (calls[id].audio) {
+        calls[id].audio.remove()
+      }
+      calls[id].call.close()
+      delete calls[id]
+    }
   }
-</style>
+
+  document.getElementById("start").onclick = async () => {
+    if (debounce) return;
+    debounce = true
+
+    if (parseInt(document.getElementById("robloxId").value)) {
+      robloxId = parseInt(document.getElementById("robloxId").value)
+      localStorage.setItem("robloxId", robloxId)
+    } else {
+      debounce = false
+      return
+    }
+
+    let microphones = [[""]]
+
+    const devices = await navigator.mediaDevices.enumerateDevices()
+
+    devices.forEach((device) => {
+      if (device.kind === "audioinput") {
+        microphones.push([device.label, device.deviceId])
+      }
+    })
+
+    document.getElementById("microphones").innerHTML = ""
+    microphones.forEach((microphone) => {
+      const option = document.createElement('option');
+      if (microphone[1])
+        option.value = microphone[1]
+      option.text = microphone[0] || "";
+      document.getElementById("microphones").appendChild(option)
+    })
+
+    document.getElementById("microphones").onchange = async () => {
+      const deviceId = document.getElementById("microphones").value
+      document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
+      document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
+      document.getElementById("localStream").muted = true;
+    }
+
+    showPage(microphonePage)
+    debounce = false
+  };
+
+
+  document.getElementById("microphoneTest").onclick = async () => {
+    if (debounce) return
+    debounce = true
+    const deviceId = document.getElementById("microphones").value
+    if (deviceId.length > 0) {
+      try {
+        const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
+        if (device) {
+          localStream = device;
+          document.getElementById("localStream").srcObject = localStream;
+          document.getElementById("localStream").muted = !document.getElementById("localStream").muted;
+        }
+      } catch { };
+
+    };
+    debounce = false;
+  }
+
+  document.getElementById("microphoneContinue").onclick = async () => {
+    if (debounce) return
+    debounce = true
+    const deviceId = document.getElementById("microphones").value
+    if (deviceId.length > 0) {
+      try {
+        const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
+        if (device) {
+          localStream = device;
+          document.getElementById("localStream").muted = true;
+
+          const peer = new Peer({
+            host: "167.235.229.141",
+            port: "9876",
+            ssl: false,
+            config: {
+              iceServers: [
+                {
+                  url: 'stun:global.stun.twilio.com:3478',
+                  urls: 'stun:global.stun.twilio.com:3478'
+                },
+                {
+                  url: 'turn:global.turn.twilio.com:3478?transport=udp',
+                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                },
+                {
+                  url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                },
+                {
+                  url: 'turn:global.turn.twilio.com:443?transport=tcp',
+                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                }
+              ],
+            },
+          });
+
+          peer.on("open", () => {
+            console.log("connected to peer", peer.id)
+            localPeer = peer;
+            showPage(searchingPage);
+
+            peer.on("call", (call) => {
+              call.answer(localStream)
+
+              call.on("stream", (otherStream) => {
+                console.log('received call with stream', otherStream)
+                calls[call.peer] = {
+                  call,
+                }
+                createAudio(call.peer, otherStream)
+              });
+              call.on("close", () => {
+                removeAudio(call.peer)
+              })
+            })
+          })
+          peer.on("error", () => {
+            for (let callId of Object.keys(calls)) {
+              removeAudio(callId)
+            }
+            document.getElementById("audios").innerHTML = ""
+            reset()
+          })
+          return
+
+        }
+      } catch { };
+
+    };
+    debounce = false;
+  }
+
+  setInterval(() => {
+    if (!searchingPage.hidden && localPeer) {
+      if (!socket) {
+        const _socket = new io("https://socket.pegasus.bot", {
+          reconnect: false,
+          query: {
+            peer_id: localPeer.id,
+            roblox_id: robloxId,
+          },
+        });
+        _socket.on("connect", () => {
+          socket = _socket;
+          console.log('connected to socket')
+
+          setInterval(() => {
+            _socket.emit("active");
+          }, 500);
+
+          _socket.on("update-users", ({ usersData }) => {
+            showPage(vcPage)
+            for (let [peerId, { position, type }] of Object.entries(usersData)) {
+              if (calls[peerId]) {
+                updateAudio(peerId, position)
+              } else if (!calls[peerId] && type === "call") {
+                console.log('call someone')
+                calls[peerId] = {}
+                const call = peer.call(peerId, localStream)
+                call.on("stream", (otherStream) => {
+                  console.log('received call with stream', otherStream)
+                  calls[peerId].call = call;
+                  createAudio(peerId, otherStream)
+                })
+              }
+            }
+          });
+          debounce = false
+        })
+        _socket.on("connect_error", (err) => {
+          socket = undefined
+          console.log("connect_error", err)
+        })
+        _socket.on("disconnect", () => {
+          socket = undefined
+          console.log('connection to socket lost')
+          showPage(searchingPage)
+        })
+      }
+    }
+  }, 5000)
+</script>
 
 </html>
