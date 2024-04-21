@@ -63,7 +63,7 @@
 
 <script defer type="module">
 
-  import { io } from "https://cdn.socket.io/4.5.4/socket.io.esm.min.js";
+  // import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
   import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
 
   if (localStorage.getItem("robloxId")) {
@@ -305,54 +305,105 @@
   setInterval(() => {
     if (!searchingPage.hidden && localPeer) {
       if (!socket) {
-        const _socket = new io("https://socket.pegasus.bot", {
-          // reconnection: true,
-          query: {
-            peer_id: localPeer.id,
-            roblox_id: robloxId,
-          },
-        });
-        _socket.on("connect", () => {
-          socket = _socket;
-          console.log('connected to socket')
 
-          // setInterval(() => {
-          //   _socket.emit("active");
-          // }, 500);
+        const url = new URL("ws://167.235.229.141:3004")
+        url.search = new URLSearchParams({
+          robloxId,
+          peerId: localPeer.id
+        })
+        console.log(url.toString())
+        const ws = new WebSocket(url.toString())
 
-          _socket.on("update-users", ({ usersData }, response) => {
-            console.log(usersData)
-            showPage(vcPage)
-            for (let [peerId, { position, type }] of Object.entries(usersData)) {
-              if (calls[peerId]) {
-                updateAudio(peerId, position)
-              } else if (!calls[peerId] && type === "call") {
-                console.log('call someone')
-                calls[peerId] = {}
-                const call = localPeer.call(peerId, localStream)
-                call.on("stream", (otherStream) => {
-                  console.log('received call with stream', otherStream)
-                  calls[peerId].call = call;
-                  createAudio(peerId, otherStream)
-                })
-              }
+        ws.addEventListener("open", () => {
+          console.log("WS connected")
+          socket = ws
+
+        })
+
+        ws.addEventListener("message", (message) => {
+          const data = JSON.parse(message.data)
+          console.log(data)
+          showPage(vcPage)
+          for (let [peerId, { position, type }] of Object.entries(data)) {
+            if (calls[peerId]) {
+              updateAudio(peerId, position)
+            } else if (!calls[peerId] && type === "call") {
+              console.log('call someone')
+              calls[peerId] = {}
+              const call = localPeer.call(peerId, localStream)
+              call.on("stream", (otherStream) => {
+                console.log('received call with stream', otherStream)
+                calls[peerId].call = call;
+                createAudio(peerId, otherStream)
+              })
             }
-            response(true)
-          });
-          debounce = false
-        })
-        _socket.on("connect_error", (err) => {
-          socket = undefined
-          console.log("connect_error", err)
-        })
-        _socket.on("disconnect", () => {
+          }
+        });
+
+        ws.addEventListener("close", () => {
           socket = undefined
           console.log('connection to socket lost')
           showPage(searchingPage)
         })
+        ws.addEventListener("error", (err) => {
+          socket = undefined
+          console.log("ws error", err)
+        })
+
+        // const _socket = new io("https://socket.pegasus.bot", {
+        //   // reconnection: true,
+        //   transports: ["websocket"],
+        //   query: {
+        //     peer_id: localPeer.id,
+        //     roblox_id: robloxId,
+        //   },
+        // });
+
+        // _socket.on("connect", () => {
+        //   socket = _socket;
+        //   console.log('connected to socket')
+
+        //   // setInterval(() => {
+        //   //   _socket.emit("active");
+        //   // }, 500);
+
+        //   _socket.on("update-users", ({ usersData }, response) => {
+        //     // console.log(usersData)
+        //     showPage(vcPage)
+        //     for (let [peerId, { position, type }] of Object.entries(usersData)) {
+        //       if (calls[peerId]) {
+        //         updateAudio(peerId, position)
+        //       } else if (!calls[peerId] && type === "call") {
+        //         console.log('call someone')
+        //         calls[peerId] = {}
+        //         const call = localPeer.call(peerId, localStream)
+        //         call.on("stream", (otherStream) => {
+        //           console.log('received call with stream', otherStream)
+        //           calls[peerId].call = call;
+        //           createAudio(peerId, otherStream)
+        //         })
+        //       }
+        //     }
+        //     response(true)
+        //   });
+        //   debounce = false
+        // })
+        // _socket.on("connect_error", (err) => {
+        //   socket = undefined
+        //   console.log("connect_error", err)
+        // })
+        // _socket.on("disconnect", () => {
+        //   socket = undefined
+        //   console.log('connection to socket lost')
+        //   showPage(searchingPage)
+        // })
       }
     }
-  }, 5000)
+  }, 5000);
+  setInterval(() => {
+    if (socket && socket.readyState === WebSocket.OPEN)
+      socket.send("active")
+  }, 100);
 </script>
 
 </html>
