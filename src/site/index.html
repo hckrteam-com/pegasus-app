@@ -52,7 +52,7 @@
     </div>
   </div>
   <div id="vcPage" hidden>
-    <div class="flex justify-center items-center flex-col">
+    <div class="flex justify-center items-center text-center flex-col">
       <h1 class="text-white mb-4 select-none">Poprawnie połączono z kanałem głosowym :)</h1>
     </div>
   </div>
@@ -185,11 +185,19 @@
       document.getElementById("microphones").appendChild(option)
     })
 
+    if (localStorage.getItem("microphoneId") && microphones.find(v => v[1] === localStorage.getItem("microphoneId"))) {
+      document.getElementById("microphones").value = localStorage.getItem("microphoneId")
+      document.getElementById("microphoneContinue").hidden = false
+      document.getElementById("microphoneTest").hidden = false
+    }
+
     document.getElementById("microphones").onchange = async () => {
       const deviceId = document.getElementById("microphones").value
       document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
       document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
       document.getElementById("localStream").muted = true;
+
+      localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
     }
 
     showPage(microphonePage)
