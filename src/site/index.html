@@ -118,7 +118,7 @@
       debounce = false;
       robloxId = undefined
       localStream = undefined
-      if (localPeer) localPeer.close()
+      if (localPeer) localPeer.disconnect()
       localPeer = undefined
       if (socket) socket.close()
       socket = undefined
@@ -258,6 +258,10 @@
 
       };
       debounce = false;
+    }
+
+    const createPeer = () => {
+
     }
 
     document.getElementById("microphoneContinue").onclick = async () => {
