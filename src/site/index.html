@@ -9,8 +9,8 @@
   <!-- <script src="index.js" type="module" defer></script> -->
 </head>
 
-<body class="m-4">
-  <div class="flex justify-center items-center h-20 flex-col">
+<body class="m-4 flex flex-col">
+  <div class="flex justify-center items-center h-20 flex-row">
     <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
   <div id="startPage" hidden>
@@ -56,354 +56,408 @@
       <h1 class="text-white mb-4 select-none">Poprawnie połączono z kanałem głosowym :)</h1>
     </div>
   </div>
+  <div class="h-6 flex justify-end m-4 absolute bottom-0 right-0" id="stopka">
+    <svg class="w-6 h-6 cursor-pointer absolute" fill="#ccc" version="1.1" id="config"
+      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455"
+      xml:space="preserve">
+      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+      <g id="SVGRepo_iconCarrier">
+        <path
+          d="M455,257v-70h-63.174c-4.423-20.802-12.706-40.174-24.066-57.334l42.32-42.32l-49.498-49.498l-42.756,42.756 C299.911,69.199,279.682,61.104,258,57.183V0h-70v59.319c-21.306,5.221-41.009,14.515-58.24,27.014L88.346,44.92L38.849,94.417 l43.979,43.979C72.59,156.135,65.513,175.926,62.359,197H0v70h66.623c5.396,19.392,14.195,37.364,25.711,53.24L45.92,366.654 l49.497,49.498l48.979-48.979c16.329,9.424,34.397,16.171,53.604,19.645V455h70v-70.319c18.91-4.634,36.557-12.476,52.334-22.92 l47.32,47.32l49.498-49.498l-47.756-47.756c10.524-16.531,18.223-35.033,22.431-54.827H455z M228,309.5 c-48.248,0-87.5-39.252-87.5-87.5s39.252-87.5,87.5-87.5s87.5,39.252,87.5,87.5S276.248,309.5,228,309.5z">
+        </path>
+      </g>
+    </svg>
+  </div>
   <audio id="localStream" autoplay muted></audio>
   <div id="audios">
   </div>
 </body>
 
 <script defer type="module">
-
-  // import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
   import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
+  const main = async () => {
+    const startPage = document.getElementById("startPage")
+    const microphonePage = document.getElementById("microphonePage")
+    const searchingPage = document.getElementById("searchingPage")
+    const vcPage = document.getElementById("vcPage")
 
-  if (localStorage.getItem("robloxId")) {
-    document.getElementById("robloxId").value = localStorage.getItem("robloxId")
-  }
+    let debounce = false;
+    let robloxId
+    let localStream
+    let localPeer
+    let socket
+    let calls = {}
+    let audioContext
 
-  const startPage = document.getElementById("startPage")
-  const microphonePage = document.getElementById("microphonePage")
-  const searchingPage = document.getElementById("searchingPage")
-  const vcPage = document.getElementById("vcPage")
-
-  let debounce = false;
-  let robloxId
-  let localStream
-  let localPeer
-  let peer
-  let socket
-  let calls = {}
-  let audioContext
-
-  const showPage = (page) => {
-    startPage.hidden = page == startPage ? false : true
-    microphonePage.hidden = page == microphonePage ? false : true
-    searchingPage.hidden = page == searchingPage ? false : true
-    vcPage.hidden = page == vcPage ? false : true
-  };
-
-  showPage(startPage);
-
-  const reset = () => {
-    reload()
-  }
-
-  const createAudio = (id, stream) => {
-    console.log('createAudio', id, stream)
-    const gain = new GainNode(audioContext)
-    calls[id].gain = gain
-    const panner = new PannerNode(audioContext, {
-      panningModel: "HRTF",
-      distanceModel: "linear",
-      positionX: 1000000,
-      positionY: 1000000,
-      positionZ: 1000000,
-      orientationX: 0,
-      orientationY: 0,
-      orientationZ: -1,
-      refDistance: 1,
-      maxDistance: 100,
-      rolloffFactor: 20,
-      coneInnerAngle: 40,
-      coneOuterAngle: 50,
-      coneOuterGain: 0.4,
-    })
-    calls[id].panner = panner
-
-    gain.gain.value = 1;
-
-    const source = audioContext.createMediaStreamSource(stream);
-
-    const audio = document.createElement("video")
-    audio.srcObject = source.mediaStream;
-
-    source.connect(panner).connect(gain).connect(audioContext.destination);
-    audioContext.resume();
-
-    document.getElementById("audios").append(audio)
-    calls[id].audio = audio;
-  }
-
-  const updateAudio = (id, position) => {
-    if (calls[id] && calls[id].gain && calls[id].panner) {
-      //update
-      calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
-      calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
-      calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
-    }
-  }
-
-  const removeAudio = (id) => {
-    if (calls[id]) {
-      if (calls[id].audio) {
-        calls[id].audio.remove()
-      }
-      calls[id].call.close()
-      delete calls[id]
-    }
-  }
-
-  document.getElementById("start").onclick = async () => {
-    if (debounce) return;
-    debounce = true
-
-    audioContext = new (window.AudioContext || window.webkitAudioContext)()
-
-    if (parseInt(document.getElementById("robloxId").value)) {
-      robloxId = parseInt(document.getElementById("robloxId").value)
-      localStorage.setItem("robloxId", robloxId)
-    } else {
-      debounce = false
-      return
+    if (localStorage.getItem("robloxId")) {
+      robloxId = localStorage.getItem("robloxId")
+      document.getElementById("robloxId").value = robloxId
     }
 
-    let microphones = [[""]]
-    const devices = await navigator.mediaDevices.enumerateDevices()
-
-    devices.forEach((device) => {
-      if (device.kind === "audioinput") {
-        microphones.push([device.label, device.deviceId])
-      }
-    })
-
-    document.getElementById("microphones").innerHTML = ""
-    microphones.forEach((microphone) => {
-      const option = document.createElement('option');
-      if (microphone[1])
-        option.value = microphone[1]
-      option.text = microphone[0] || "";
-      document.getElementById("microphones").appendChild(option)
-    })
-
-    if (localStorage.getItem("microphoneId") && microphones.find(v => v[1] === localStorage.getItem("microphoneId"))) {
-      document.getElementById("microphones").value = localStorage.getItem("microphoneId")
-      document.getElementById("microphoneContinue").hidden = false
-      document.getElementById("microphoneTest").hidden = false
+    if (localStorage.getItem("microphoneId")) {
+      const microhponeId = localStorage.getItem("microphoneId")
+      const microphone = await navigator.mediaDevices.getUserMedia({ "audio": { deviceId: microhponeId } })
+      if (microphone) localStream = microphone
     }
 
-    document.getElementById("microphones").onchange = async () => {
-      const deviceId = document.getElementById("microphones").value
-      document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
-      document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
-      document.getElementById("localStream").muted = true;
-
-      localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
-    }
-
-    showPage(microphonePage)
-    debounce = false
-  };
-
-
-  document.getElementById("microphoneTest").onclick = async () => {
-    if (debounce) return
-    debounce = true
-    const deviceId = document.getElementById("microphones").value
-    if (deviceId.length > 0) {
-      try {
-        const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
-        if (device) {
-          localStream = device;
-          document.getElementById("localStream").srcObject = localStream;
-          document.getElementById("localStream").muted = !document.getElementById("localStream").muted;
-        }
-      } catch { };
-
+    const showPage = (page) => {
+      startPage.hidden = page == startPage ? false : true
+      microphonePage.hidden = page == microphonePage ? false : true
+      searchingPage.hidden = page == searchingPage ? false : true
+      vcPage.hidden = page == vcPage ? false : true
     };
-    debounce = false;
-  }
 
-  document.getElementById("microphoneContinue").onclick = async () => {
-    if (debounce) return
-    debounce = true
-    const deviceId = document.getElementById("microphones").value
-    if (deviceId.length > 0) {
-      try {
-        const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
-        if (device) {
-          localStream = device;
-          document.getElementById("localStream").muted = true;
+    if (robloxId && localStream) {
+      showPage(searchingPage)
+    } else {
+      showPage(startPage);
+    }
 
-          const peer = new Peer({
-            host: "167.235.229.141",
-            port: "9876",
-            ssl: false,
-            config: {
-              iceServers: [
-                {
-                  url: 'stun:global.stun.twilio.com:3478',
-                  urls: 'stun:global.stun.twilio.com:3478'
-                },
-                {
-                  url: 'turn:global.turn.twilio.com:3478?transport=udp',
-                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                  urls: 'turn:global.turn.twilio.com:3478?transport=udp',
-                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                },
-                {
-                  url: 'turn:global.turn.twilio.com:3478?transport=tcp',
-                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                  urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
-                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                },
-                {
-                  url: 'turn:global.turn.twilio.com:443?transport=tcp',
-                  username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                  urls: 'turn:global.turn.twilio.com:443?transport=tcp',
-                  credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                }
-              ],
-            },
-          });
+    const reset = () => {
+      debounce = false;
+      robloxId = undefined
+      localStream = undefined
+      if (localPeer) localPeer.close()
+      localPeer = undefined
+      if (socket) socket.close()
+      socket = undefined
+      document.getElementById("audios").innerHTML = ""
+      document.getElementById("localStream").muted = true
+      calls = {}
+      audioContext = undefined
+    }
 
-          peer.on("open", () => {
-            console.log("connected to peer", peer.id)
-            localPeer = peer;
-            showPage(searchingPage);
+    const createAudio = (id, stream) => {
+      console.log('createAudio', id, stream)
+      const gain = new GainNode(audioContext)
+      calls[id].gain = gain
+      const panner = new PannerNode(audioContext, {
+        panningModel: "HRTF",
+        distanceModel: "linear",
+        positionX: 1000000,
+        positionY: 1000000,
+        positionZ: 1000000,
+        orientationX: 0,
+        orientationY: 0,
+        orientationZ: -1,
+        refDistance: 1,
+        maxDistance: 100,
+        rolloffFactor: 20,
+        coneInnerAngle: 40,
+        coneOuterAngle: 50,
+        coneOuterGain: 0.4,
+      })
+      calls[id].panner = panner
 
-            peer.on("call", (call) => {
-              call.answer(localStream)
+      gain.gain.value = 1;
 
-              call.on("stream", (otherStream) => {
-                console.log('received call with stream', otherStream)
-                calls[call.peer] = {
-                  call,
-                }
-                createAudio(call.peer, otherStream)
-              });
-              call.on("close", () => {
-                removeAudio(call.peer)
+      const source = audioContext.createMediaStreamSource(stream);
+
+      const audio = document.createElement("video")
+      audio.srcObject = source.mediaStream;
+
+      source.connect(panner).connect(gain).connect(audioContext.destination);
+      audioContext.resume();
+
+      document.getElementById("audios").append(audio)
+      calls[id].audio = audio;
+    }
+
+    const updateAudio = (id, position) => {
+      if (calls[id] && calls[id].gain && calls[id].panner) {
+        //update
+        calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
+        calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
+        calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+      }
+    }
+
+    const removeAudio = (id) => {
+      if (calls[id]) {
+        if (calls[id].audio) {
+          calls[id].audio.remove()
+        }
+        calls[id].call.close()
+        delete calls[id]
+      }
+    }
+
+    document.getElementById("start").onclick = async () => {
+      if (debounce) return;
+      debounce = true
+
+      audioContext = new (window.AudioContext || window.webkitAudioContext)()
+
+      if (parseInt(document.getElementById("robloxId").value)) {
+        robloxId = parseInt(document.getElementById("robloxId").value)
+        localStorage.setItem("robloxId", robloxId)
+      } else {
+        debounce = false
+        return
+      }
+
+      let microphones = [[""]]
+      const devices = await navigator.mediaDevices.enumerateDevices()
+
+      devices.forEach((device) => {
+        if (device.kind === "audioinput") {
+          microphones.push([device.label, device.deviceId])
+        }
+      })
+
+      document.getElementById("microphones").innerHTML = ""
+      microphones.forEach((microphone) => {
+        const option = document.createElement('option');
+        if (microphone[1])
+          option.value = microphone[1]
+        option.text = microphone[0] || "";
+        document.getElementById("microphones").appendChild(option)
+      })
+
+      if (localStorage.getItem("microphoneId") && microphones.find(v => v[1] === localStorage.getItem("microphoneId"))) {
+        document.getElementById("microphones").value = localStorage.getItem("microphoneId")
+        document.getElementById("microphoneContinue").hidden = false
+        document.getElementById("microphoneTest").hidden = false
+      }
+
+      document.getElementById("microphones").onchange = async () => {
+        const deviceId = document.getElementById("microphones").value
+        document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
+        document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
+        document.getElementById("localStream").muted = true;
+
+        localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
+      }
+
+      showPage(microphonePage)
+      debounce = false
+    };
+
+
+    document.getElementById("config").onclick = () => {
+      const robloxIdBackup = robloxId
+      reset();
+      robloxId = robloxIdBackup
+      showPage(startPage)
+    }
+
+    document.getElementById("microphoneTest").onclick = async () => {
+      if (debounce) return
+      debounce = true
+      const deviceId = document.getElementById("microphones").value
+      if (deviceId.length > 0) {
+        try {
+          const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
+          if (device) {
+            localStream = device;
+            document.getElementById("localStream").srcObject = localStream;
+            document.getElementById("localStream").muted = !document.getElementById("localStream").muted;
+          }
+        } catch { };
+
+      };
+      debounce = false;
+    }
+
+    document.getElementById("microphoneContinue").onclick = async () => {
+      if (debounce) return
+      debounce = true
+      const deviceId = document.getElementById("microphones").value
+      if (deviceId.length > 0) {
+        try {
+          const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
+          if (device) {
+            localStream = device;
+            document.getElementById("localStream").muted = true;
+
+            const peer = new Peer({
+              host: "167.235.229.141",
+              port: "9876",
+              ssl: false,
+              config: {
+                iceServers: [
+                  // {
+                  //   url: 'stun:global.stun.twilio.com:3478',
+                  //   urls: 'stun:global.stun.twilio.com:3478'
+                  // },
+                  // {
+                  //   url: 'turn:global.turn.twilio.com:3478?transport=udp',
+                  //   username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  //   urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+                  //   credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                  // },
+                  // {
+                  //   url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                  //   username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  //   urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                  //   credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                  // },
+                  // {
+                  //   url: 'turn:global.turn.twilio.com:443?transport=tcp',
+                  //   username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                  //   urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+                  //   credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                  // }
+                  {
+                    url: "turn:193.111.250.75:3478?transport=udp",
+                    urls: "turn:193.111.250.75:3478?transport=udp",
+                    username: "admin",
+                    credential: "admin",
+                  },
+                  {
+                    url: "turn:193.111.250.75:3478?transport=tcp",
+                    urls: "turn:193.111.250.75:3478?transport=tcp",
+                    username: "admin",
+                    credential: "admin",
+                  }
+                ],
+              },
+            });
+
+            peer.on("open", () => {
+              console.log("connected to peer", peer.id)
+              localPeer = peer;
+              showPage(searchingPage);
+
+              peer.on("call", (call) => {
+                call.answer(localStream)
+
+                call.on("stream", (otherStream) => {
+                  console.log('received call with stream', otherStream)
+                  calls[call.peer] = {
+                    call,
+                  }
+                  createAudio(call.peer, otherStream)
+                });
+                call.on("close", () => {
+                  removeAudio(call.peer)
+                })
               })
             })
+            peer.on("error", (err) => {
+              console.log(err)
+              for (let callId of Object.keys(calls)) {
+                removeAudio(callId)
+              }
+              document.getElementById("audios").innerHTML = ""
+              showPage()
+              reset()
+            })
+            return
+
+          }
+        } catch { };
+
+      };
+      debounce = false;
+    }
+
+    setInterval(() => {
+      if (!searchingPage.hidden && localPeer) {
+        if (!socket) {
+
+          const url = new URL("ws://167.235.229.141:3004")
+          url.search = new URLSearchParams({
+            robloxId,
+            peerId: localPeer.id
           })
-          peer.on("error", (err) => {
-            console.log(err)
-            for (let callId of Object.keys(calls)) {
-              removeAudio(callId)
+          console.log(url.toString())
+          const ws = new WebSocket(url.toString())
+
+          ws.addEventListener("open", () => {
+            console.log("WS connected")
+            socket = ws
+
+          })
+
+          ws.addEventListener("message", (message) => {
+            const data = JSON.parse(message.data)
+            console.log(data)
+            showPage(vcPage)
+            for (let [peerId, { position, type }] of Object.entries(data)) {
+              if (calls[peerId]) {
+                updateAudio(peerId, position)
+              } else if (!calls[peerId] && type === "call") {
+                console.log('call someone')
+                calls[peerId] = {}
+                const call = localPeer.call(peerId, localStream)
+                call.on("stream", (otherStream) => {
+                  console.log('received call with stream', otherStream)
+                  calls[peerId].call = call;
+                  createAudio(peerId, otherStream)
+                })
+              }
             }
-            document.getElementById("audios").innerHTML = ""
-            reset()
+          });
+
+          ws.addEventListener("close", () => {
+            socket = undefined
+            console.log('connection to socket lost')
+            showPage(searchingPage)
           })
-          return
+          ws.addEventListener("error", (err) => {
+            socket = undefined
+            console.log("ws error", err)
+          })
 
+          // const _socket = new io("https://socket.pegasus.bot", {
+          //   // reconnection: true,
+          //   transports: ["websocket"],
+          //   query: {
+          //     peer_id: localPeer.id,
+          //     roblox_id: robloxId,
+          //   },
+          // });
+
+          // _socket.on("connect", () => {
+          //   socket = _socket;
+          //   console.log('connected to socket')
+
+          //   // setInterval(() => {
+          //   //   _socket.emit("active");
+          //   // }, 500);
+
+          //   _socket.on("update-users", ({ usersData }, response) => {
+          //     // console.log(usersData)
+          //     showPage(vcPage)
+          //     for (let [peerId, { position, type }] of Object.entries(usersData)) {
+          //       if (calls[peerId]) {
+          //         updateAudio(peerId, position)
+          //       } else if (!calls[peerId] && type === "call") {
+          //         console.log('call someone')
+          //         calls[peerId] = {}
+          //         const call = localPeer.call(peerId, localStream)
+          //         call.on("stream", (otherStream) => {
+          //           console.log('received call with stream', otherStream)
+          //           calls[peerId].call = call;
+          //           createAudio(peerId, otherStream)
+          //         })
+          //       }
+          //     }
+          //     response(true)
+          //   });
+          //   debounce = false
+          // })
+          // _socket.on("connect_error", (err) => {
+          //   socket = undefined
+          //   console.log("connect_error", err)
+          // })
+          // _socket.on("disconnect", () => {
+          //   socket = undefined
+          //   console.log('connection to socket lost')
+          //   showPage(searchingPage)
+          // })
         }
-      } catch { };
-
-    };
-    debounce = false;
+      }
+    }, 5000);
+    setInterval(() => {
+      if (socket && socket.readyState === WebSocket.OPEN)
+        socket.send("active")
+    }, 100);
   }
 
-  setInterval(() => {
-    if (!searchingPage.hidden && localPeer) {
-      if (!socket) {
-
-        const url = new URL("ws://167.235.229.141:3004")
-        url.search = new URLSearchParams({
-          robloxId,
-          peerId: localPeer.id
-        })
-        console.log(url.toString())
-        const ws = new WebSocket(url.toString())
-
-        ws.addEventListener("open", () => {
-          console.log("WS connected")
-          socket = ws
-
-        })
-
-        ws.addEventListener("message", (message) => {
-          const data = JSON.parse(message.data)
-          console.log(data)
-          showPage(vcPage)
-          for (let [peerId, { position, type }] of Object.entries(data)) {
-            if (calls[peerId]) {
-              updateAudio(peerId, position)
-            } else if (!calls[peerId] && type === "call") {
-              console.log('call someone')
-              calls[peerId] = {}
-              const call = localPeer.call(peerId, localStream)
-              call.on("stream", (otherStream) => {
-                console.log('received call with stream', otherStream)
-                calls[peerId].call = call;
-                createAudio(peerId, otherStream)
-              })
-            }
-          }
-        });
-
-        ws.addEventListener("close", () => {
-          socket = undefined
-          console.log('connection to socket lost')
-          showPage(searchingPage)
-        })
-        ws.addEventListener("error", (err) => {
-          socket = undefined
-          console.log("ws error", err)
-        })
-
-        // const _socket = new io("https://socket.pegasus.bot", {
-        //   // reconnection: true,
-        //   transports: ["websocket"],
-        //   query: {
-        //     peer_id: localPeer.id,
-        //     roblox_id: robloxId,
-        //   },
-        // });
-
-        // _socket.on("connect", () => {
-        //   socket = _socket;
-        //   console.log('connected to socket')
-
-        //   // setInterval(() => {
-        //   //   _socket.emit("active");
-        //   // }, 500);
-
-        //   _socket.on("update-users", ({ usersData }, response) => {
-        //     // console.log(usersData)
-        //     showPage(vcPage)
-        //     for (let [peerId, { position, type }] of Object.entries(usersData)) {
-        //       if (calls[peerId]) {
-        //         updateAudio(peerId, position)
-        //       } else if (!calls[peerId] && type === "call") {
-        //         console.log('call someone')
-        //         calls[peerId] = {}
-        //         const call = localPeer.call(peerId, localStream)
-        //         call.on("stream", (otherStream) => {
-        //           console.log('received call with stream', otherStream)
-        //           calls[peerId].call = call;
-        //           createAudio(peerId, otherStream)
-        //         })
-        //       }
-        //     }
-        //     response(true)
-        //   });
-        //   debounce = false
-        // })
-        // _socket.on("connect_error", (err) => {
-        //   socket = undefined
-        //   console.log("connect_error", err)
-        // })
-        // _socket.on("disconnect", () => {
-        //   socket = undefined
-        //   console.log('connection to socket lost')
-        //   showPage(searchingPage)
-        // })
-      }
-    }
-  }, 5000);
-  setInterval(() => {
-    if (socket && socket.readyState === WebSocket.OPEN)
-      socket.send("active")
-  }, 100);
+  main();
 </script>
 
 </html>
