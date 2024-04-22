@@ -88,7 +88,7 @@
     let localPeer
     let socket
     let calls = {}
-    let audioContext
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
     if (localStorage.getItem("robloxId")) {
       robloxId = localStorage.getItem("robloxId")
@@ -101,6 +101,83 @@
       if (microphone) localStream = microphone
     }
 
+    const createPeer = () => {
+      const peer = new Peer({
+        host: "167.235.229.141",
+        port: "9876",
+        ssl: false,
+        config: {
+          iceServers: [
+            {
+              url: 'stun:global.stun.twilio.com:3478',
+              urls: 'stun:global.stun.twilio.com:3478'
+            },
+            {
+              url: 'turn:global.turn.twilio.com:3478?transport=udp',
+              username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+              urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+              credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+            },
+            {
+              url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+              username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+              urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+              credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+            },
+            {
+              url: 'turn:global.turn.twilio.com:443?transport=tcp',
+              username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+              urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+              credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+            }
+            // {
+            //   url: "turn:193.111.250.75:3478?transport=udp",
+            //   urls: "turn:193.111.250.75:3478?transport=udp",
+            //   username: "admin",
+            //   credential: "admin",
+            // },
+            // {
+            //   url: "turn:193.111.250.75:3478?transport=tcp",
+            //   urls: "turn:193.111.250.75:3478?transport=tcp",
+            //   username: "admin",
+            //   credential: "admin",
+            // }
+          ],
+        },
+      });
+
+      peer.on("open", () => {
+        console.log("connected to peer", peer.id)
+        localPeer = peer;
+        showPage(searchingPage);
+
+        peer.on("call", (call) => {
+          call.answer(localStream)
+
+          call.on("stream", (otherStream) => {
+            console.log('received call with stream', otherStream)
+            calls[call.peer] = {
+              call,
+            }
+            createAudio(call.peer, otherStream)
+          });
+          call.on("close", () => {
+            removeAudio(call.peer)
+          })
+        })
+      })
+      peer.on("error", (err) => {
+        console.log(err)
+        for (let callId of Object.keys(calls)) {
+          removeAudio(callId)
+        }
+        document.getElementById("audios").innerHTML = ""
+        showPage()
+        reset()
+      })
+    }
+
+
     const showPage = (page) => {
       startPage.hidden = page == startPage ? false : true
       microphonePage.hidden = page == microphonePage ? false : true
@@ -110,6 +187,7 @@
 
     if (robloxId && localStream) {
       showPage(searchingPage)
+      createPeer();
     } else {
       showPage(startPage);
     }
@@ -125,7 +203,6 @@
       document.getElementById("audios").innerHTML = ""
       document.getElementById("localStream").muted = true
       calls = {}
-      audioContext = undefined
     }
 
     const createAudio = (id, stream) => {
@@ -186,8 +263,6 @@
     document.getElementById("start").onclick = async () => {
       if (debounce) return;
       debounce = true
-
-      audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
       if (parseInt(document.getElementById("robloxId").value)) {
         robloxId = parseInt(document.getElementById("robloxId").value)
@@ -259,11 +334,6 @@
       };
       debounce = false;
     }
-
-    const createPeer = () => {
-
-    }
-
     document.getElementById("microphoneContinue").onclick = async () => {
       if (debounce) return
       debounce = true
@@ -275,80 +345,7 @@
             localStream = device;
             document.getElementById("localStream").muted = true;
 
-            const peer = new Peer({
-              host: "167.235.229.141",
-              port: "9876",
-              ssl: false,
-              config: {
-                iceServers: [
-                  {
-                    url: 'stun:global.stun.twilio.com:3478',
-                    urls: 'stun:global.stun.twilio.com:3478'
-                  },
-                  {
-                    url: 'turn:global.turn.twilio.com:3478?transport=udp',
-                    username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                    urls: 'turn:global.turn.twilio.com:3478?transport=udp',
-                    credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                  },
-                  {
-                    url: 'turn:global.turn.twilio.com:3478?transport=tcp',
-                    username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                    urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
-                    credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                  },
-                  {
-                    url: 'turn:global.turn.twilio.com:443?transport=tcp',
-                    username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
-                    urls: 'turn:global.turn.twilio.com:443?transport=tcp',
-                    credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
-                  }
-                  // {
-                  //   url: "turn:193.111.250.75:3478?transport=udp",
-                  //   urls: "turn:193.111.250.75:3478?transport=udp",
-                  //   username: "admin",
-                  //   credential: "admin",
-                  // },
-                  // {
-                  //   url: "turn:193.111.250.75:3478?transport=tcp",
-                  //   urls: "turn:193.111.250.75:3478?transport=tcp",
-                  //   username: "admin",
-                  //   credential: "admin",
-                  // }
-                ],
-              },
-            });
-
-            peer.on("open", () => {
-              console.log("connected to peer", peer.id)
-              localPeer = peer;
-              showPage(searchingPage);
-
-              peer.on("call", (call) => {
-                call.answer(localStream)
-
-                call.on("stream", (otherStream) => {
-                  console.log('received call with stream', otherStream)
-                  calls[call.peer] = {
-                    call,
-                  }
-                  createAudio(call.peer, otherStream)
-                });
-                call.on("close", () => {
-                  removeAudio(call.peer)
-                })
-              })
-            })
-            peer.on("error", (err) => {
-              console.log(err)
-              for (let callId of Object.keys(calls)) {
-                removeAudio(callId)
-              }
-              document.getElementById("audios").innerHTML = ""
-              showPage()
-              reset()
-            })
-            return
+            createPeer()
 
           }
         } catch { };
@@ -404,54 +401,6 @@
             socket = undefined
             console.log("ws error", err)
           })
-
-          // const _socket = new io("https://socket.pegasus.bot", {
-          //   // reconnection: true,
-          //   transports: ["websocket"],
-          //   query: {
-          //     peer_id: localPeer.id,
-          //     roblox_id: robloxId,
-          //   },
-          // });
-
-          // _socket.on("connect", () => {
-          //   socket = _socket;
-          //   console.log('connected to socket')
-
-          //   // setInterval(() => {
-          //   //   _socket.emit("active");
-          //   // }, 500);
-
-          //   _socket.on("update-users", ({ usersData }, response) => {
-          //     // console.log(usersData)
-          //     showPage(vcPage)
-          //     for (let [peerId, { position, type }] of Object.entries(usersData)) {
-          //       if (calls[peerId]) {
-          //         updateAudio(peerId, position)
-          //       } else if (!calls[peerId] && type === "call") {
-          //         console.log('call someone')
-          //         calls[peerId] = {}
-          //         const call = localPeer.call(peerId, localStream)
-          //         call.on("stream", (otherStream) => {
-          //           console.log('received call with stream', otherStream)
-          //           calls[peerId].call = call;
-          //           createAudio(peerId, otherStream)
-          //         })
-          //       }
-          //     }
-          //     response(true)
-          //   });
-          //   debounce = false
-          // })
-          // _socket.on("connect_error", (err) => {
-          //   socket = undefined
-          //   console.log("connect_error", err)
-          // })
-          // _socket.on("disconnect", () => {
-          //   socket = undefined
-          //   console.log('connection to socket lost')
-          //   showPage(searchingPage)
-          // })
         }
       }
     }, 5000);
