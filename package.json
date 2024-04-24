@@ -1,7 +1,7 @@
 {
   "name": "vc-electron",
   "productName": "vc-electron",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
@@ -19,7 +19,7 @@
       "target": "nsis"
     },
     "directories": {
-      "output": "dist2"
+      "output": "dist"
     }
   },
   "devDependencies": {
