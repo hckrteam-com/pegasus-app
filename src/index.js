@@ -1,24 +1,15 @@
 const {
   app,
   BrowserWindow,
-  systemPreferences,
-  Notification,
-  desktopCapturer,
   dialog
 } = require("electron");
 const path = require("node:path");
-const crypto = require("crypto");
-const { autoUpdater, AppUpdater } = require("electron-updater");
-const isDev = require("electron-is-dev");
 
 // const RichPresence = require("rich-presence-builder")
 // const express = require('express')
 // const server = express();
 
 const iconPath = path.join(__dirname, "./icons/pegasus.ico");
-
-autoUpdater.autoInstallOnAppQuit = true;
-autoUpdater.autoDownload = false;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -41,31 +32,9 @@ const createWindow = () => {
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
   // Open the DevTools.
-  if (isDev)
-    mainWindow.webContents.openDevTools({
-      mode: "detach",
-    });
-
-  if (!isDev) {
-    autoUpdater.on("checking-for-update", () => {
-      showMessage("Checking for updates...");
-    });
-
-    autoUpdater.on("update-available", (_event, releaseNotes, releaseName) => {
-      const dialogOpts = {
-        type: "info",
-        buttons: ["Ok"],
-        title: "Aktualizacja",
-        message: process.platform === "win32" ? releaseNotes : releaseName,
-        detail: "Nowa wersja jest w trakcie pobierania."
-      }
-
-      dialog.showMessageBox(dialogOpts, (response) => {
-        autoUpdater.downloadUpdate()
-      })
-    });
-
-  }
+  mainWindow.webContents.openDevTools({
+    mode: "detach",
+  });
 };
 
 // This method will be called when Electron has finished
