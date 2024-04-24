@@ -74,6 +74,15 @@
   </div>
 </body>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.bridge.updateMessage(updateMessage)
+  })
+  const updateMessage = (event, message) => {
+    console.log("message logged in view", message)
+  };
+</script>
+
 <script defer type="module">
   import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
   const main = async () => {
@@ -356,16 +365,16 @@
                     urls: 'stun:nl-coturn.hckrteam.com:3478'
                   },
                   {
-                     url: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                     urls: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                     username: "admin",
-                     credential: "admin",
+                    url: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
+                    urls: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
+                    username: "admin",
+                    credential: "admin",
                   },
                   {
-                     url: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                     urls: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                     username: "admin",
-                     credential: "admin",
+                    url: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
+                    urls: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
+                    username: "admin",
+                    credential: "admin",
                   }
                 ],
               },
