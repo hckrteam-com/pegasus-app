@@ -68,9 +68,6 @@ const createWindow = () => {
         let token = url.split(urlProtocol + "://")[1]
         console.log(token)
 
-        //mainWindow.webContents.send("token", token)
-
-
         let req = await fetch(`https://api.hckrteam.com/v1/oauth/pegasus/dashboard`, {
           method: 'GET',
           headers: {
@@ -82,25 +79,23 @@ const createWindow = () => {
         console.log(res)
 
         if (res.success) {
+
           console.log("User is logged in")
-
-          // dodaj tutaj wysyłanie tokenu do strony
-
           mainWindow.loadFile(path.join(__dirname, "./site/index.html"), {query: {"data": JSON.stringify(res)}});
           mainWindow.webContents.openDevTools({
             mode: "detach",
           });
           loaded = true
 
-
-          
         }else{
-          console.log("Invalid token")
 
+          console.log("Invalid token")
           mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
           mainWindow.webContents.openDevTools({
             mode: "detach",
           });
+          loaded = true
+
         }
 
       }
