@@ -1,26 +1,14 @@
 {
   "name": "vc-electron",
   "productName": "vc-electron",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\"",
-    "dist": "electron-builder"
-  },
-  "build": {
-    "appId": "com.pegasus.vc",
-    "productName": "Pegasus VC",
-    "win": {
-      "target": "nsis"
-    },
-    "directories": {
-      "output": "dist"
-    }
+    "publish": "electron-forge publish"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
@@ -38,11 +26,6 @@
   "author": {
     "name": "Dawidooss",
     "email": "94919831+Dawidooss@users.noreply.github.com"
-  },
-  "repository": "https://github.com/Dawidooss/VC-Electron",
-  "publish": {
-    "provider": "github",
-    "releaseType": "release"
   },
   "license": "MIT",
   "dependencies": {

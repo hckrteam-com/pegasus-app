@@ -10,7 +10,6 @@
 </head>
 
 <body class="m-4 flex flex-col">
-  Test
   <div class="flex justify-center items-center h-20 flex-row">
     <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
@@ -100,6 +99,27 @@
     let calls = {}
     let audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
+    const changeLocalStream = (stream) => {
+      const source = audioContext.createMediaStreamSource(stream)
+
+      // Create noise gate with adjustable parameters
+      const noiseGate = audioContext.createDynamicsCompressor();
+      noiseGate.threshold.setValueAtTime(-50, audioContext.currentTime); // Adjust threshold as needed
+      noiseGate.ratio.setValueAtTime(20, audioContext.currentTime); // Adjust ratio as needed
+
+      // Create dynamic compressor with adjustable parameters
+      const compressor = audioContext.createDynamicsCompressor();
+      compressor.attack.setValueAtTime(0.003, audioContext.currentTime);
+      compressor.release.setValueAtTime(0.25, audioContext.currentTime);
+      compressor.ratio.setValueAtTime(10, audioContext.currentTime); // Adjust ratio as needed
+      compressor.threshold.setValueAtTime(-10, audioContext.currentTime); // Adjust threshold as needed
+
+      const destination = audioContext.createMediaStreamDestination();
+      source.connect(noiseGate).connect(compressor).connect(destination);
+
+      localStream = destination.stream
+    }
+
     if (localStorage.getItem("robloxId")) {
       robloxId = localStorage.getItem("robloxId")
       document.getElementById("robloxId").value = robloxId
@@ -108,8 +128,9 @@
     if (localStorage.getItem("microphoneId")) {
       const microhponeId = localStorage.getItem("microphoneId")
       const microphone = await navigator.mediaDevices.getUserMedia({ "audio": { deviceId: microhponeId } })
-      if (microphone) localStream = microphone
+      if (microphone) changeLocalStream(microphone)
     }
+
 
     const createPeer = () => {
       const peer = new Peer({
@@ -335,7 +356,7 @@
         try {
           const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
           if (device) {
-            localStream = device;
+            changeLocalStream(device)
             document.getElementById("localStream").srcObject = localStream;
             document.getElementById("localStream").muted = !document.getElementById("localStream").muted;
           }
@@ -352,7 +373,7 @@
         try {
           const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
           if (device) {
-            localStream = device;
+            changeLocalStream(device)
             document.getElementById("localStream").muted = true;
 
             const peer = new Peer({

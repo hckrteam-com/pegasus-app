@@ -1,24 +1,31 @@
-const { app, BrowserWindow, systemPreferences, Notification, desktopCapturer } = require('electron');
-const path = require('node:path');
-const crypto = require('crypto');
+const {
+  app,
+  BrowserWindow,
+  systemPreferences,
+  Notification,
+  desktopCapturer,
+  dialog
+} = require("electron");
+const path = require("node:path");
+const crypto = require("crypto");
 const { autoUpdater, AppUpdater } = require("electron-updater");
+const isDev = require("electron-is-dev");
 
 // const RichPresence = require("rich-presence-builder")
 // const express = require('express')
 // const server = express();
 
-const iconPath = path.join(__dirname, './icons/pegasus.ico');
+const iconPath = path.join(__dirname, "./icons/pegasus.ico");
 
-autoUpdater.autoInstallOnAppQuit = true
-autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.autoDownload = false;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
+if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
 const createWindow = () => {
-
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 350,
@@ -27,40 +34,38 @@ const createWindow = () => {
     autoHideMenuBar: true,
     icon: iconPath,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
-  const showMessage = (message) => {
-    mainWindow.webContents.send("updateMessage", message)
-  }
-
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, './site/index.html'));
+  mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
   // Open the DevTools.
-  mainWindow.webContents.openDevTools({
-    "mode": "detach"
-  });
-
-  autoUpdater.on("checking-for-update", () => {
-      showMessage("Checking for updates...")
-  })
-
-  autoUpdater.on("update-available", () => {
-    showMessage("Update avaible.")
-    autoUpdater.downloadUpdate().then((m) => {
-      showMessage("downloaded", m)
+  if (isDev)
+    mainWindow.webContents.openDevTools({
+      mode: "detach",
     });
-  })
 
-  autoUpdater.on("update-downloaded", () => {
-    showMessage("Update downloaded")
-  })
-  autoUpdater.on("download-progress", (info) => {
-    showMessage("Download progress", info.percent)
-  })
+  if (!isDev) {
+    autoUpdater.on("checking-for-update", () => {
+      showMessage("Checking for updates...");
+    });
 
-  autoUpdater.checkForUpdates()
+    autoUpdater.on("update-available", (_event, releaseNotes, releaseName) => {
+      const dialogOpts = {
+        type: "info",
+        buttons: ["Ok"],
+        title: "Aktualizacja",
+        message: process.platform === "win32" ? releaseNotes : releaseName,
+        detail: "Nowa wersja jest w trakcie pobierania."
+      }
+
+      dialog.showMessageBox(dialogOpts, (response) => {
+        autoUpdater.downloadUpdate()
+      })
+    });
+
+  }
 };
 
 // This method will be called when Electron has finished
@@ -71,7 +76,7 @@ app.whenReady().then(() => {
 
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
     }
@@ -81,87 +86,14 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // server.use(express.json())
 
@@ -185,7 +117,7 @@ app.on('window-all-closed', () => {
 
 //   let gamename = ""
 //   let players = 0
-  
+
 //   if (place_id) {
 //     universe_id = await getUniverseId(place_id)
 //     console.log(await universe_id)
@@ -233,7 +165,6 @@ app.on('window-all-closed', () => {
 //   notif.show()
 
 // })
-
 
 // server.listen(3000, () => {
 //   console.log('Listening at http://localhost:3000')
