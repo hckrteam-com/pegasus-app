@@ -1,13 +1,17 @@
 const {
   app,
   BrowserWindow,
-  dialog
+  dialog,
+  ipcRenderer
 } = require("electron");
 const path = require("node:path");
+
 
 // const RichPresence = require("rich-presence-builder")
 // const express = require('express')
 // const server = express();
+
+// na starej wersji electrona
 
 const iconPath = path.join(__dirname, "./icons/pegasus.ico");
 
@@ -15,6 +19,18 @@ const iconPath = path.join(__dirname, "./icons/pegasus.ico");
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
+
+// set app as default protocol client
+const urlProtocol = 'pegasus-app' // example:// 
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(urlProtocol, process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient(urlProtocol)
+}
+const gotTheLock = app.requestSingleInstanceLock()
+
 
 const createWindow = () => {
   // Create the browser window.
@@ -30,11 +46,78 @@ const createWindow = () => {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools({
-    mode: "detach",
-  });
+  //let data = {"age": 18, "healthy": true}
+  //mainWindow.loadFile(path.join(__dirname, "./site/index.html"), {query: {"data": JSON.stringify(data)}});
+  //mainWindow.webContents.openDevTools({
+    //mode: "detach",
+  //});
+
+
+  let loaded = false
+
+  if (!gotTheLock) {
+    app.quit()
+  } else {
+    app.on('second-instance', async (event, commandLine, workingDirectory) => {
+
+      let url = commandLine.pop().slice(0, -1)
+      console.log(url)
+
+
+      if (url.startsWith(urlProtocol + "://")) {
+        let token = url.split(urlProtocol + "://")[1]
+        console.log(token)
+
+        //mainWindow.webContents.send("token", token)
+
+
+        let req = await fetch(`https://api.hckrteam.com/v1/oauth/pegasus/dashboard`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        let res = await req.json()
+        console.log(res)
+
+        if (res.success) {
+          console.log("User is logged in")
+
+          // dodaj tutaj wysyłanie tokenu do strony
+
+          mainWindow.loadFile(path.join(__dirname, "./site/index.html"), {query: {"data": JSON.stringify(res)}});
+          mainWindow.webContents.openDevTools({
+            mode: "detach",
+          });
+          loaded = true
+
+
+          
+        }else{
+          console.log("Invalid token")
+
+          mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
+          mainWindow.webContents.openDevTools({
+            mode: "detach",
+          });
+        }
+
+      }
+
+    })
+
+
+  }
+
+  if (loaded == false){
+    mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
+    mainWindow.webContents.openDevTools({
+      mode: "detach",
+    });
+  }
+
+
 };
 
 // This method will be called when Electron has finished

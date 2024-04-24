@@ -91,6 +91,19 @@
     const searchingPage = document.getElementById("searchingPage")
     const vcPage = document.getElementById("vcPage")
 
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log(urlParams)
+
+    const stringdata = urlParams.get('data');
+
+    if(stringdata){
+      let data = JSON.parse(stringdata).data
+      console.log(data)
+      localStorage.setItem("robloxId", data.roblox_id)
+    }
+
+  
+
     let debounce = false;
     let robloxId
     let localStream
