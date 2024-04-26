@@ -19,6 +19,7 @@ const main = async () => {
         const source = audioContext.createMediaStreamSource(stream)
 
         muteGain = audioContext.createGain();
+        muteGain.gain.value = 1
         // // Create noise gate with adjustable parameters
         // const noiseGate = audioContext.createDynamicsCompressor();
         // noiseGate.threshold.setValueAtTime(-50, audioContext.currentTime); // Adjust threshold as needed
@@ -34,21 +35,22 @@ const main = async () => {
         const destination = audioContext.createMediaStreamDestination();
         source.connect(muteGain).connect(destination);
 
-        localStream = destination.stream
+        // localStream = destination.stream
+        localStream = stream
     }
 
-    setInterval(() => {
-        if (document.getElementById("pushToTalk").checked) {
-            document.getElementById("mic").classList.remove("hidden")
-            if (muteGain)
-                muteGain.gain.value = 1;
+    // setInterval(() => {
+    //     if (document.getElementById("pushToTalk").checked) {
+    //         document.getElementById("mic").classList.remove("hidden")
+    //         if (muteGain)
+    //             muteGain.gain.value = 1;
 
-        } else {
-            document.getElementById("mic").classList.add('hidden')
-            if (muteGain)
-                muteGain.gain.value = 0;
-        }
-    }, 1)
+    //     } else {
+    //         document.getElementById("mic").classList.add('hidden')
+    //         if (muteGain)
+    //             muteGain.gain.value = 0;
+    //     }
+    // }, 1)
 
     if (localStorage.getItem("robloxId")) {
         robloxId = localStorage.getItem("robloxId")
