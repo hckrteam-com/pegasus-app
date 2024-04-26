@@ -16,10 +16,10 @@ const main = async () => {
     let muteGain
 
     const changeLocalStream = (stream) => {
-        const source = audioContext.createMediaStreamSource(stream)
+        // const source = audioContext.createMediaStreamSource(stream)
 
         muteGain = audioContext.createGain();
-        muteGain.gain.value = 1
+        // muteGain.gain.value = 1
         // // Create noise gate with adjustable parameters
         // const noiseGate = audioContext.createDynamicsCompressor();
         // noiseGate.threshold.setValueAtTime(-50, audioContext.currentTime); // Adjust threshold as needed
@@ -32,8 +32,8 @@ const main = async () => {
         // compressor.ratio.setValueAtTime(10, audioContext.currentTime); // Adjust ratio as needed
         // compressor.threshold.setValueAtTime(-10, audioContext.currentTime); // Adjust threshold as needed
 
-        const destination = audioContext.createMediaStreamDestination();
-        source.connect(muteGain).connect(destination);
+        // const destination = audioContext.createMediaStreamDestination();
+        // source.connect(muteGain).connect(destination);
 
         // localStream = destination.stream
         localStream = stream
@@ -79,20 +79,26 @@ const main = async () => {
             config: {
                 iceServers: [
                     {
-                        url: 'stun:nl-coturn.hckrteam.com:3478',
-                        urls: 'stun:nl-coturn.hckrteam.com:3478'
+                        url: 'stun:global.stun.twilio.com:3478',
+                        urls: 'stun:global.stun.twilio.com:3478'
                     },
                     {
-                        url: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                        urls: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                        username: "admin",
-                        credential: "admin",
+                        url: 'turn:global.turn.twilio.com:3478?transport=udp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:3478?transport=udp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
                     },
                     {
-                        url: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                        urls: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                        username: "admin",
-                        credential: "admin",
+                        url: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:3478?transport=tcp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
+                    },
+                    {
+                        url: 'turn:global.turn.twilio.com:443?transport=tcp',
+                        username: 'e0bad77d18410399ce5af94ec177d0f1dcd821734d816f39bc650734990c2122',
+                        urls: 'turn:global.turn.twilio.com:443?transport=tcp',
+                        credential: 'RSCqxdrY3fpiIVv4t9113OBHBHSnNf48Enu53uDWK6o='
                     }
                 ],
             },
