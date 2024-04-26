@@ -13,12 +13,12 @@ const main = async () => {
     let socket
     let calls = {}
     let audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    let muteGain
+    // let muteGain
 
     const changeLocalStream = (stream) => {
         // const source = audioContext.createMediaStreamSource(stream)
 
-        muteGain = audioContext.createGain();
+        // muteGain = audioContext.createGain();
         // muteGain.gain.value = 1
         // // Create noise gate with adjustable parameters
         // const noiseGate = audioContext.createDynamicsCompressor();
