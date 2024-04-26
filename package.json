@@ -1,5 +1,5 @@
 {
-  "name": "Pegasus VC",
+  "name": "pegasus-vc",
   "productName": "Pegasus VC",
   "version": "1.0.0",
   "description": "Pegasus VC",
@@ -59,8 +59,8 @@
     }
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0",
-    "iohook": "^0.6.6"
+    "electron-iohook": "^0.1.2",
+    "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.54",
@@ -68,7 +68,7 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.54",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.54",
     "@electron-forge/maker-zip": "^6.0.0-beta.54",
-    "electron": "^8.5.3",
+    "electron": "^15.0.0",
     "electron-builder": "^22.9.1"
   },
   "iohook": {

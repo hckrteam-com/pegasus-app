@@ -1,9 +1,8 @@
 const { app, BrowserWindow, screen, ipcRenderer } = require('electron');
 const path = require('path');
-const ioHook = require('iohook');
+const ioHook = require("electron-iohook").default
 
 const iconPath = path.join(__dirname, "icons/pegasus.ico");
-
 
 if (require('electron-squirrel-startup')) {
     app.quit();
@@ -57,5 +56,5 @@ app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
         app.quit();
     }
-    ioHook.stop()
+    // ioHook.stop()
 });
