@@ -1,8 +1,8 @@
 {
-  "name": "input-overlay-electron",
-  "productName": "Input Overlay",
+  "name": "Pegasus VC",
+  "productName": "Pegasus VC",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Pegasus VC",
   "main": "src/index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -18,23 +18,18 @@
       "target": [
         "nsis"
       ],
-      "icon": "src/icon.ico",
+      "icon": "icons/pegasus.ico",
       "requestedExecutionLevel": "requireAdministrator"
     },
     "nsis": {
-      "installerIcon": "src/icon.ico",
-      "uninstallerIcon": "src/icon.ico",
-      "uninstallDisplayName": "CPU Monitor",
-      "license": "license.txt",
+      "installerIcon": "icons/pegasus.ico",
+      "uninstallerIcon": "icons/pegasus.ico",
+      "uninstallDisplayName": "Pegasus VC Uninstaller",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
   },
   "keywords": [],
-  "author": {
-    "name": "chinsun9",
-    "email": "40482203+chinsun9@users.noreply.github.com"
-  },
   "license": "MIT",
   "config": {
     "forge": {
