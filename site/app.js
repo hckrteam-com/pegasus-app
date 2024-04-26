@@ -32,7 +32,7 @@ const main = async () => {
         // compressor.ratio.setValueAtTime(10, audioContext.currentTime); // Adjust ratio as needed
         // compressor.threshold.setValueAtTime(-10, audioContext.currentTime); // Adjust threshold as needed
 
-        // const destination = audioContext.createMediaStreamDestination();
+        const destination = audioContext.createMediaStreamDestination();
         source.connect(muteGain).connect(destination);
 
         localStream = destination.stream
