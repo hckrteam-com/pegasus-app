@@ -4,6 +4,7 @@ const main = async () => {
     const microphonePage = document.getElementById("microphonePage")
     const searchingPage = document.getElementById("searchingPage")
     const vcPage = document.getElementById("vcPage")
+    const keybindingPage = document.getElementById("keybindingPage")
 
     let debounce = false;
     let robloxId
@@ -12,10 +13,12 @@ const main = async () => {
     let socket
     let calls = {}
     let audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    let muteGain
 
     const changeLocalStream = (stream) => {
         const source = audioContext.createMediaStreamSource(stream)
 
+        muteGain = audioContext.createGain();
         // // Create noise gate with adjustable parameters
         // const noiseGate = audioContext.createDynamicsCompressor();
         // noiseGate.threshold.setValueAtTime(-50, audioContext.currentTime); // Adjust threshold as needed
@@ -29,16 +32,23 @@ const main = async () => {
         // compressor.threshold.setValueAtTime(-10, audioContext.currentTime); // Adjust threshold as needed
 
         const destination = audioContext.createMediaStreamDestination();
-        // source.connect(noiseGate).connect(compressor).connect(destination);
+        source.connect(muteGain).connect(destination);
 
         localStream = destination.stream
-
     }
 
-    document.getElementById("pushToTalk").onchange = () => {
-        console.log(!document.getElementById("pushToTalk").checked)
-        document.getElementById("mic").hidden = !document.getElementById("pushToTalk").checked
-    }
+    setInterval(() => {
+        if (document.getElementById("pushToTalk").checked) {
+            document.getElementById("mic").classList.remove("hidden")
+            if (muteGain)
+                muteGain.gain.value = 1;
+
+        } else {
+            document.getElementById("mic").classList.add('hidden')
+            if (muteGain)
+                muteGain.gain.value = 0;
+        }
+    }, 1)
 
     if (localStorage.getItem("robloxId")) {
         robloxId = localStorage.getItem("robloxId")
@@ -51,9 +61,16 @@ const main = async () => {
         if (microphone) changeLocalStream(microphone)
     }
 
+    if (localStorage.getItem("pushToTalk")) {
+        const [rawcode, key] = localStorage.getItem("pushToTalk").split(",")
+
+        document.getElementById("pushToTalkRawCode").value = parseInt(rawcode)
+        document.getElementById("pushToTalkKeybind").value = key
+    }
+
 
     const createPeer = () => {
-        const peer = new Peer({
+        localPeer = new Peer({
             host: "167.235.229.141",
             port: "9876",
             ssl: false,
@@ -79,11 +96,11 @@ const main = async () => {
             },
         });
 
-        peer.on("open", () => {
-            localPeer = peer;
+        localPeer.on("open", () => {
+            if (!localPeer) return
             showPage(searchingPage);
 
-            peer.on("call", (call) => {
+            localPeer.on("call", (call) => {
                 call.answer(localStream)
 
                 call.on("stream", (otherStream) => {
@@ -98,14 +115,14 @@ const main = async () => {
                 })
             })
         })
-        peer.on("error", (err) => {
+        localPeer.on("error", (err) => {
             console.log(err)
             for (let callId of Object.keys(calls)) {
                 removeAudio(callId)
             }
             document.getElementById("audios").innerHTML = ""
-            showPage()
             reset()
+            showPage(startPage)
         })
     }
 
@@ -115,6 +132,7 @@ const main = async () => {
         microphonePage.hidden = page == microphonePage ? false : true
         searchingPage.hidden = page == searchingPage ? false : true
         vcPage.hidden = page == vcPage ? false : true
+        keybindingPage.hidden = page == keybindingPage ? false : true
     };
 
     if (robloxId && localStream) {
@@ -175,7 +193,6 @@ const main = async () => {
 
     const updateAudio = (id, position) => {
         if (calls[id] && calls[id].gain && calls[id].panner) {
-            //update
             calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
             calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
             calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
@@ -266,6 +283,10 @@ const main = async () => {
         };
         debounce = false;
     }
+    document.getElementById("keybindingContinue").onclick = async () => {
+        createPeer()
+    }
+
     document.getElementById("microphoneContinue").onclick = async () => {
         if (debounce) return
         debounce = true
@@ -277,70 +298,30 @@ const main = async () => {
                     changeLocalStream(device)
                     document.getElementById("localStream").muted = true;
 
-                    const peer = new Peer({
-                        host: "167.235.229.141",
-                        port: "9876",
-                        ssl: false,
-                        config: {
-                            iceServers: [
-                                {
-                                    url: 'stun:nl-coturn.hckrteam.com:3478',
-                                    urls: 'stun:nl-coturn.hckrteam.com:3478'
-                                },
-                                {
-                                    url: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                                    urls: "turn:nl-coturn.hckrteam.com:3478?transport=udp",
-                                    username: "admin",
-                                    credential: "admin",
-                                },
-                                {
-                                    url: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                                    urls: "turn:nl-coturn.hckrteam.com:3478?transport=tcp",
-                                    username: "admin",
-                                    credential: "admin",
-                                }
-                            ],
-                        },
-                    });
-
-                    //
-
-                    peer.on("open", () => {
-                        console.log("connected to peer", peer.id)
-                        localPeer = peer;
-                        showPage(searchingPage);
-
-                        peer.on("call", (call) => {
-                            call.answer(localStream)
-
-                            call.on("stream", (otherStream) => {
-                                console.log('received call with stream', otherStream)
-                                calls[call.peer] = {
-                                    call,
-                                }
-                                createAudio(call.peer, otherStream)
-                            });
-                            call.on("close", () => {
-                                removeAudio(call.peer)
-                            })
-                        })
-                    })
-                    peer.on("error", (err) => {
-                        console.log(err)
-                        for (let callId of Object.keys(calls)) {
-                            removeAudio(callId)
-                        }
-                        document.getElementById("audios").innerHTML = ""
-                        showPage()
-                        reset()
-                    })
-                    return
-
+                    showPage(keybindingPage)
                 }
             } catch { };
 
         };
         debounce = false;
+    }
+
+    document.onkeydown = (event) => {
+        if (document.getElementById("pushToTalkKeybind") === document.activeElement) {
+            document.getElementById("pushToTalkRawCode").value = parseInt(event.which)
+            document.getElementById("pushToTalkKeybind").value = event.key.toUpperCase()
+
+            localStorage.setItem("pushToTalk", [parseInt(event.which), event.key.toUpperCase()])
+        }
+
+        console.log(parseInt(event.which), parseInt(document.getElementById("pushToTalkRawCode").value))
+        if (parseInt(event.which) === parseInt(document.getElementById("pushToTalkRawCode").value))
+            document.getElementById("pushToTalk").checked = true
+    }
+
+    document.onkeyup = (event) => {
+        if (parseInt(event.which) === parseInt(document.getElementById("pushToTalkRawCode").value))
+            document.getElementById("pushToTalk").checked = false
     }
 
     setInterval(() => {
@@ -384,7 +365,8 @@ const main = async () => {
                 ws.addEventListener("close", () => {
                     socket = undefined
                     console.log('connection to socket lost')
-                    showPage(searchingPage)
+                    if (!vcPage.hidden)
+                        showPage(searchingPage)
                 })
                 ws.addEventListener("error", (err) => {
                     socket = undefined

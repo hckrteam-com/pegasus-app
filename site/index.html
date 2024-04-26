@@ -11,6 +11,7 @@
 
 <body class="m-4 flex flex-col">
   <input id="pushToTalk" type="checkbox" hidden></input>
+  <input id="pushToTalkRawCode" type="number" value="86" hidden></input>
   <div class="flex justify-center items-center h-20 flex-row">
     <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
@@ -41,6 +42,17 @@
         id="microphoneContinue">Dalej</button>
     </div>
   </div>
+  <div id="keybindingPage" hidden>
+    <div class="flex items-center h-40 flex-col mt-10">
+      <h1 class="text-white mb-4 select-none">Keybinding:</h1>
+      <label class="text-white" for="pushToTalkKeybind">Naciśnij by mówić:</label>
+      <input name="pushToTalkKeybind" id="pushToTalkKeybind" readonly onfocus="this.select()" onmouseup="return false;"
+        type="text" value="V" class="w-16 text-center"></input>
+      <button
+        class="mt-8 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
+        id="keybindingContinue">Dalej</button>
+    </div>
+  </div>
   <div id="searchingPage" hidden>
     <div class="flex justify-center items-center h-72 flex-col">
       <h1 class="text-white mb-4 select-none">Wyszukiwanie serwera...</h1>
@@ -53,7 +65,7 @@
     </div>
   </div>
   <div id="vcPage" hidden>
-    <div class="h-6 flex justify-end m-4 absolute top-0 right-0" id="mic" hidden>
+    <div class="h-6 flex justify-end m-4 absolute top-0 right-0 hidden" id="mic">
       <svg fill="#ffffff" class="w-6 h-6 absolute" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 410.414 410.414" xml:space="preserve">
         <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -96,9 +108,9 @@
   const electron = require('electron');
   const ipcRenderer = electron.ipcRenderer;
 
-  ipcRenderer.on('pushToTalk', (event, data) => {
-    document.getElementById("pushToTalk").checked = data
-    document.getElementById("mic").hidden = !data
+  ipcRenderer.on('keyPressed', (event, [key, pressed]) => {
+    if (key === parseInt(document.getElementById("pushToTalkRawCode").value))
+      document.getElementById("pushToTalk").checked = pressed
   });
 </script>
 <script defer type="module" src="app.js"></script>

@@ -33,14 +33,11 @@ const createWindow = () => {
     mainWindow.removeMenu()
 
     ioHook.on('keydown', (event) => {
-        console.log(event.rawcode)
-        if (event.rawcode === 164)
-            mainWindow.webContents.send('pushToTalk', true);
+        mainWindow.webContents.send('keyPressed', [event.rawcode, true]);
     });
 
     ioHook.on('keyup', (event) => {
-        if (event.rawcode === 164)
-            mainWindow.webContents.send('pushToTalk', false);
+        mainWindow.webContents.send('keyPressed', [event.rawcode, false]);
     });
 
     ioHook.start();
