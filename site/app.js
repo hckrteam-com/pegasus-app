@@ -13,7 +13,7 @@ const main = async () => {
     let socket
     let calls = {}
     let audioContext = new (window.AudioContext || window.webkitAudioContext)()
-    // let muteGain
+    let muteGain
 
     const changeLocalStream = (stream) => {
         const source = audioContext.createMediaStreamSource(stream)
