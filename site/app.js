@@ -39,16 +39,22 @@ const main = async () => {
         // localStream = stream
     }
 
+    let muteTimeout
     setInterval(() => {
         if (document.getElementById("pushToTalk").checked) {
             document.getElementById("mic").classList.remove("hidden")
+            if (muteTimeout) clearTimeout(muteTimeout)
             if (muteGain)
                 muteGain.gain.value = 1;
 
         } else {
             document.getElementById("mic").classList.add('hidden')
-            if (muteGain)
-                muteGain.gain.value = 0;
+            if (muteTimeout) clearTimeout(muteTimeout)
+            if (muteGain) {
+                muteTimeout = setTimeout(() => {
+                    muteGain.gain.value = 0;
+                }, 100)
+            }
         }
     }, 1)
 
@@ -153,7 +159,7 @@ const main = async () => {
         if (socket) socket.close()
         socket = undefined
         document.getElementById("audios").innerHTML = ""
-        document.getElementById("localStream").muted = true
+        muteLocalStream(true)
         calls = {}
     }
 
@@ -198,6 +204,15 @@ const main = async () => {
             calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
             calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
             calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+        }
+    }
+
+    const muteLocalStream = (status) => {
+        document.getElementById("localStream").muted = status
+        if (document.getElementById("localStream").muted) {
+            document.getElementById("microphoneTest").innerHTML = "Testuj mikrofon"
+        } else {
+            document.getElementById("microphoneTest").innerHTML = "Przestań testować"
         }
     }
 
@@ -251,7 +266,7 @@ const main = async () => {
             const deviceId = document.getElementById("microphones").value
             document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
             document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
-            document.getElementById("localStream").muted = true;
+            muteLocalStream(true)
 
             localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
         }
@@ -278,7 +293,7 @@ const main = async () => {
                 if (device) {
                     changeLocalStream(device)
                     document.getElementById("localStream").srcObject = localStream;
-                    document.getElementById("localStream").muted = !document.getElementById("localStream").muted;
+                    muteLocalStream(!document.getElementById("localStream").muted)
                 }
             } catch { };
 
@@ -298,7 +313,7 @@ const main = async () => {
                 const device = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId } })
                 if (device) {
                     changeLocalStream(device)
-                    document.getElementById("localStream").muted = true;
+                    muteLocalStream(true)
 
                     showPage(keybindingPage)
                 }
