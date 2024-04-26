@@ -19,7 +19,8 @@ const createWindow = () => {
         icon: iconPath,
         webPreferences: {
             "contextIsolation": false,
-            "nodeIntegration": true
+            "nodeIntegration": true,
+            "additionalArguments": ['--use-fake-ui-for-media-stream']
         },
     });
 
