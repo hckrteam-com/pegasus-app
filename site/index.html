@@ -10,20 +10,29 @@
 </head>
 
 <body class="m-4 flex flex-col">
+
+  <input id="robloxId" type="number" hidden></input>
   <input id="pushToTalk" type="checkbox" hidden></input>
   <input id="pushToTalkRawCode" type="number" value="86" hidden></input>
   <div class="flex justify-center items-center h-20 flex-row">
     <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
+  <div id="loginPage">
+    <div class="flex justify-center items-center h-40 flex-col">
+      <p class="text-white text-xl">Próba logowania...</p>
+    </div>
+  </div>
   <div id="startPage" hidden>
     <div class="flex justify-center items-center h-40 flex-col">
-      <h1 class="text-white mb-4 select-none">Podaj RobloxID:</h1>
-      <input id="robloxId"
+      <!-- <h1 class="text-white mb-4 select-none">Podaj RobloxID:</h1> -->
+      <!-- <input id="robloxId"
         class="bg-darkgray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         type="text">
       </input>
       <button class="mt-4 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200"
-        id="start">Rozpocznij</button>
+        id="start">Rozpocznij</button> -->
+      <button class="mt-4 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200" id="start">Zaloguj
+        się</button>
     </div>
   </div>
   <div id="microphonePage" hidden>
@@ -112,6 +121,42 @@
     if (key === parseInt(document.getElementById("pushToTalkRawCode").value))
       document.getElementById("pushToTalk").checked = pressed
   });
+
+  document.getElementById("start").onclick = () => {
+    electron.shell.openExternal('https://pegasus.bot/dashboard-vc')
+  }
+
+  const onToken = async (token) => {
+    let req = await fetch(`https://api.hckrteam.com/v1/oauth/pegasus/dashboard`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    let res = await req.json()
+
+    if (res.success) {
+      document.getElementById('robloxId').value = res.data.roblox_id
+      localStorage.setItem('token', token)
+      return true
+    }
+    localStorage.removeItem("token")
+    return false
+  }
+
+  ipcRenderer.on('token', (event, token) => {
+    onToken(token)
+  });
+  if (localStorage.getItem("token")) {
+    onToken(localStorage.getItem("token")).then((suc) => {
+      document.getElementById("loginPage").hidden = true
+      if (!suc) document.getElementById("startPage").hidden = false
+    })
+  } else {
+    document.getElementById("loginPage").hidden = true
+    document.getElementById("startPage").hidden = false
+  }
 </script>
 <script defer type="module" src="app.js"></script>
 

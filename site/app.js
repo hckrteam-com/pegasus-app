@@ -7,7 +7,7 @@ const main = async () => {
     const keybindingPage = document.getElementById("keybindingPage")
 
     let debounce = false;
-    let robloxId
+    let robloxId = parseInt(document.getElementById("robloxId").value)
     let localStream
     let localPeer
     let socket
@@ -57,11 +57,6 @@ const main = async () => {
             }
         }
     }, 1)
-
-    if (localStorage.getItem("robloxId")) {
-        robloxId = localStorage.getItem("robloxId")
-        document.getElementById("robloxId").value = robloxId
-    }
 
     if (localStorage.getItem("microphoneId")) {
         const microhponeId = localStorage.getItem("microphoneId")
@@ -130,7 +125,7 @@ const main = async () => {
             }
             document.getElementById("audios").innerHTML = ""
             reset()
-            showPage(startPage)
+            start()
         })
     }
 
@@ -143,17 +138,8 @@ const main = async () => {
         keybindingPage.hidden = page == keybindingPage ? false : true
     };
 
-    if (robloxId && localStream) {
-        showPage(searchingPage)
-        createPeer();
-    } else {
-        showPage(startPage);
-    }
-
     const reset = () => {
         debounce = false;
-        robloxId = undefined
-        localStream = undefined
         if (localPeer) localPeer.disconnect()
         localPeer = undefined
         if (socket) socket.close()
@@ -226,61 +212,57 @@ const main = async () => {
         }
     }
 
-    document.getElementById("start").onclick = async () => {
-        if (debounce) return;
-        debounce = true
 
-        if (parseInt(document.getElementById("robloxId").value)) {
-            robloxId = parseInt(document.getElementById("robloxId").value)
-            localStorage.setItem("robloxId", robloxId)
+    // create microphones list
+    let microphones = [[""]]
+    const devices = await navigator.mediaDevices.enumerateDevices()
+
+    devices.forEach((device) => {
+        if (device.kind === "audioinput") {
+            microphones.push([device.label, device.deviceId])
+        }
+    })
+
+    document.getElementById("microphones").innerHTML = ""
+    microphones.forEach((microphone) => {
+        const option = document.createElement('option');
+        if (microphone[1])
+            option.value = microphone[1]
+        option.text = microphone[0] || "";
+        document.getElementById("microphones").appendChild(option)
+    })
+
+    document.getElementById("microphones").onchange = async () => {
+        const deviceId = document.getElementById("microphones").value
+        document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
+        document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
+        muteLocalStream(true)
+
+        localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
+    }
+
+    if (localStorage.getItem("microphoneId") && microphones.find(v => v[1] === localStorage.getItem("microphoneId"))) {
+        document.getElementById("microphones").value = localStorage.getItem("microphoneId")
+        document.getElementById("microphoneContinue").hidden = false
+        document.getElementById("microphoneTest").hidden = false
+    }
+
+    const start = async () => {
+        if (localStream) {
+            showPage(searchingPage)
+            createPeer();
         } else {
-            debounce = false
-            return
+            showPage(microphonePage);
         }
-
-        let microphones = [[""]]
-        const devices = await navigator.mediaDevices.enumerateDevices()
-
-        devices.forEach((device) => {
-            if (device.kind === "audioinput") {
-                microphones.push([device.label, device.deviceId])
-            }
-        })
-
-        document.getElementById("microphones").innerHTML = ""
-        microphones.forEach((microphone) => {
-            const option = document.createElement('option');
-            if (microphone[1])
-                option.value = microphone[1]
-            option.text = microphone[0] || "";
-            document.getElementById("microphones").appendChild(option)
-        })
-
-        if (localStorage.getItem("microphoneId") && microphones.find(v => v[1] === localStorage.getItem("microphoneId"))) {
-            document.getElementById("microphones").value = localStorage.getItem("microphoneId")
-            document.getElementById("microphoneContinue").hidden = false
-            document.getElementById("microphoneTest").hidden = false
-        }
-
-        document.getElementById("microphones").onchange = async () => {
-            const deviceId = document.getElementById("microphones").value
-            document.getElementById("microphoneContinue").hidden = !(deviceId.length > 0)
-            document.getElementById("microphoneTest").hidden = !(deviceId.length > 0)
-            muteLocalStream(true)
-
-            localStorage.setItem("microphoneId", deviceId.length > 0 ? deviceId : null)
-        }
-
-        showPage(microphonePage)
-        debounce = false
-    };
+    }
+    start()
 
 
     document.getElementById("config").onclick = () => {
         const robloxIdBackup = robloxId
         reset();
         robloxId = robloxIdBackup
-        showPage(startPage)
+        showPage(microphonePage)
     }
 
     document.getElementById("microphoneTest").onclick = async () => {
@@ -398,4 +380,9 @@ const main = async () => {
     }, 100);
 }
 
-main();
+let startId = setInterval(() => {
+    if (document.getElementById("robloxId").value > 0) {
+        clearInterval(startId)
+        main();
+    }
+}, 100)
