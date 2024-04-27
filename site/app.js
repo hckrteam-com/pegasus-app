@@ -186,7 +186,7 @@ const main = async () => {
         const audio = document.createElement("video")
         audio.srcObject = source.mediaStream;
 
-        source.connect(panner).connect(gain).connect(lpf1).connect(lfp2).connect(hpf1).connect(hpf2).connect(audioContext.destination);
+        source.connect(panner).connect(gain).connect(lpf1).connect(lpf2).connect(hpf1).connect(hpf2).connect(audioContext.destination);
         audioContext.resume();
 
         document.getElementById("audios").append(audio)
@@ -446,8 +446,10 @@ const main = async () => {
                 }
             }
         };
-        if (socket && socket.readyState === WebSocket.OPEN)
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            console.log(channelName)
             socket.send(channelName)
+        }
     }, 10);
 }
 
