@@ -161,11 +161,11 @@ const main = async () => {
         calls[id].audio = audio;
     }
 
-    const updateAudio = (id, position, muted, speakingChannel) => {
-        console.log('updateAudio', id, position, muted, speakingChannel)
+    const updateAudio = (id, position, speakingChannel) => {
+        console.log('updateAudio', id, position, speakingChannel)
         if (calls[id] && calls[id].gain && calls[id].panner) {
             const call = calls[id]
-            call.gain.gain.value = muted ? 0 : 1
+            call.gain.gain.value = speakingChannel === undefined ? 0 : 1
             if (speakingChannel === "Proximity") {
                 call.panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
                 call.panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
@@ -323,9 +323,9 @@ const main = async () => {
 
                     if (data.type === "positions") {
                         showPage(vcPage)
-                        for (let [peerId, { position, type, muted, speakingChannel }] of Object.entries(data.positions)) {
+                        for (let [peerId, { position, type, speakingChannel }] of Object.entries(data.positions)) {
                             if (calls[peerId]) {
-                                updateAudio(peerId, position, muted, speakingChannel)
+                                updateAudio(peerId, position, speakingChannel)
                             } else if (!calls[peerId] && type === "call") {
                                 console.log('call someone')
                                 calls[peerId] = {}
