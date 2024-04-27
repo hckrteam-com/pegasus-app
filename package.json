@@ -62,6 +62,7 @@
     }
   },
   "dependencies": {
+    "audio-effects": "^1.2.4",
     "electron-iohook": "^0.1.2",
     "electron-squirrel-startup": "^1.0.0",
     "fetch": "^1.1.0",

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcRenderer } = require('electron');
+const { app, BrowserWindow, screen, ipcRenderer, desktopCapturer } = require('electron');
 const path = require('path');
 const ioHook = require("electron-iohook").default
 const fetch = require('make-fetch-happen')

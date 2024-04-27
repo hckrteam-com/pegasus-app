@@ -1,4 +1,5 @@
 import { Peer } from "https://esm.sh/peerjs@1.5.2?bundle-deps"
+
 const main = async () => {
     const startPage = document.getElementById("startPage")
     const microphonePage = document.getElementById("microphonePage")
@@ -20,40 +21,34 @@ const main = async () => {
 
         muteGain = audioContext.createGain();
         muteGain.gain.value = 1
-        // // Create noise gate with adjustable parameters
-        // const noiseGate = audioContext.createDynamicsCompressor();
-        // noiseGate.threshold.setValueAtTime(-50, audioContext.currentTime); // Adjust threshold as needed
-        // noiseGate.ratio.setValueAtTime(20, audioContext.currentTime); // Adjust ratio as needed
 
-        // // Create dynamic compressor with adjustable parameters
-        // const compressor = audioContext.createDynamicsCompressor();
-        // compressor.attack.setValueAtTime(0.003, audioContext.currentTime);
-        // compressor.release.setValueAtTime(0.25, audioContext.currentTime);
-        // compressor.ratio.setValueAtTime(10, audioContext.currentTime); // Adjust ratio as needed
-        // compressor.threshold.setValueAtTime(-10, audioContext.currentTime); // Adjust threshold as needed
+        // TODO: 
+        // let noiseGate = new NoiseGateNode(audioContext);
 
         const destination = audioContext.createMediaStreamDestination();
         source.connect(muteGain).connect(destination);
 
         localStream = destination.stream
-        // localStream = stream
     }
 
     let muteTimeout
     setInterval(() => {
         if (document.getElementById("pushToTalk").checked) {
-            document.getElementById("mic").classList.remove("hidden")
-            if (muteTimeout) clearTimeout(muteTimeout)
-            if (muteGain)
-                muteGain.gain.value = 1;
-
+            if (document.getElementById("mic").classList.contains('hidden')) {
+                document.getElementById("mic").classList.remove("hidden")
+                if (muteTimeout) clearTimeout(muteTimeout)
+                if (muteGain)
+                    muteGain.gain.value = 1;
+            }
         } else {
-            document.getElementById("mic").classList.add('hidden')
-            if (muteTimeout) clearTimeout(muteTimeout)
-            if (muteGain) {
-                muteTimeout = setTimeout(() => {
-                    muteGain.gain.value = 0;
-                }, 100)
+            if (!document.getElementById("mic").classList.contains('hidden')) {
+                document.getElementById("mic").classList.add('hidden')
+                if (muteTimeout) clearTimeout(muteTimeout)
+                if (muteGain) {
+                    muteTimeout = setTimeout(() => {
+                        muteGain.gain.value = 0;
+                    }, 100)
+                }
             }
         }
     }, 1)
@@ -376,7 +371,7 @@ const main = async () => {
     }, 5000);
     setInterval(() => {
         if (socket && socket.readyState === WebSocket.OPEN)
-            socket.send("active")
+            socket.send(document.getElementById("pushToTalkRawCode").value)
     }, 100);
 }
 
