@@ -14,6 +14,8 @@ const main = async () => {
     let calls = {}
     let audioContext = new (window.AudioContext || window.webkitAudioContext)()
     let muteGain
+    let avaibleKeybindedChannels = []
+    let avaibleCustomChannels = []
 
     const changeLocalStream = (stream) => {
         const source = audioContext.createMediaStreamSource(stream)
@@ -34,11 +36,13 @@ const main = async () => {
         let mute = true
         for (let child of document.getElementById("keybinds").childNodes) {
             if (child.classList.contains("talk")) {
-                mute = false
-                break
+                const channelName = child.id.replace("keybind-", "")
+                if (avaibleKeybindedChannels.find(v => v === channelName) || channelName === "Proximity") {
+                    mute = false
+                    break
+                }
             }
         }
-        console.log('mute', mute)
         if (muteGain)
             muteGain.gain.value = mute ? 0 : 1;
     }, 10)
@@ -147,6 +151,34 @@ const main = async () => {
         })
         calls[id].panner = panner
 
+        // telephonizer
+        var lpf1 = audioContext.createBiquadFilter();
+        lpf1.type = "allpass";
+        lpf1.frequency.value = 2000.0;
+        var lpf2 = audioContext.createBiquadFilter();
+        lpf2.type = "allpass";
+        lpf2.frequency.value = 2000.0;
+        var hpf1 = audioContext.createBiquadFilter();
+        hpf1.type = "allpass";
+        hpf1.frequency.value = 500.0;
+        var hpf2 = audioContext.createBiquadFilter();
+        hpf2.type = "allpass";
+        hpf2.frequency.value = 500.0;
+
+        calls[id].telephone = (state) => {
+            if (state) {
+                lpf1.type = "lowpass"
+                lpf2.type = "lowpass"
+                hpf1.type = "highpass"
+                hpf2.type = "highpass"
+            } else {
+                lpf1.type = "allpass"
+                lpf2.type = "allpass"
+                hpf1.type = "allpass"
+                hpf2.type = "allpass"
+            }
+        }
+
         gain.gain.value = 1;
 
         const source = audioContext.createMediaStreamSource(stream);
@@ -154,26 +186,48 @@ const main = async () => {
         const audio = document.createElement("video")
         audio.srcObject = source.mediaStream;
 
-        source.connect(panner).connect(gain).connect(audioContext.destination);
+        source.connect(panner).connect(gain).connect(lpf1).connect(lfp2).connect(hpf1).connect(hpf2).connect(audioContext.destination);
         audioContext.resume();
 
         document.getElementById("audios").append(audio)
         calls[id].audio = audio;
     }
 
-    const updateAudio = (id, position, speakingChannel) => {
-        console.log('updateAudio', id, position, speakingChannel)
+    const updateAudio = (id, position, speakingChannels) => {
+        console.log('updateAudio', id, position, speakingChannels)
         if (calls[id] && calls[id].gain && calls[id].panner) {
             const call = calls[id]
-            call.gain.gain.value = speakingChannel === "undefined" ? 0 : 1
-            if (speakingChannel === "Proximity") {
-                call.panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
-                call.panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
-                call.panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+            if (speakingChannels.length === 0) {
+                call.gain.gain.value = 0
             } else {
-                call.panner.positionX.setValueAtTime(0, audioContext.currentTime);
-                call.panner.positionY.setValueAtTime(0, audioContext.currentTime);
-                call.panner.positionZ.setValueAtTime(0, audioContext.currentTime);
+                let inChannelWithHim = false
+                for (let channel of avaibleKeybindedChannels) {
+                    if (speakingChannels.find(v => v === channel)) {
+                        inChannelWithHim = true
+                        break
+                    }
+                }
+                for (let [channel] of Object.entries(avaibleCustomChannels)) {
+                    if (speakingChannels.find(v => v === channel)) {
+                        inChannelWithHim = true
+                        break
+                    }
+                }
+
+                call.gain.gain.value = 1
+                if (inChannelWithHim) {
+                    call.telephone(true)
+
+                    call.panner.positionX.setValueAtTime(0, audioContext.currentTime);
+                    call.panner.positionY.setValueAtTime(0, audioContext.currentTime);
+                    call.panner.positionZ.setValueAtTime(0, audioContext.currentTime);
+                } else {
+                    call.telephone(false)
+
+                    call.panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
+                    call.panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
+                    call.panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+                }
             }
         }
     }
@@ -323,9 +377,9 @@ const main = async () => {
 
                     if (data.type === "positions") {
                         showPage(vcPage)
-                        for (let [peerId, { position, type, speakingChannel }] of Object.entries(data.positions)) {
+                        for (let [peerId, { position, type, speakingChannels }] of Object.entries(data.positions)) {
                             if (calls[peerId]) {
-                                updateAudio(peerId, position, speakingChannel)
+                                updateAudio(peerId, position, speakingChannels)
                             } else if (!calls[peerId] && type === "call") {
                                 console.log('call someone')
                                 calls[peerId] = {}
@@ -360,6 +414,12 @@ const main = async () => {
                                 }
                             }
                         }
+                        if (data.keybindedChannels) {
+                            avaibleKeybindedChannels = data.keybindedChannels
+                        }
+                        if (data.customChannels) {
+                            avaibleCustomChannels = data.customChannels
+                        }
                     }
                 });
 
@@ -377,12 +437,17 @@ const main = async () => {
         }
     }, 5000);
     setInterval(() => {
-        let channel;
+        let channelName;
         for (let child of document.getElementById("keybinds").childNodes) {
-            if (child.classList.contains("talk")) { channel = child.id.replace("keybind-", "") }
+            if (child.classList.contains("talk")) {
+                const _channelName = child.id.replace("keybind-", "")
+                if (avaibleKeybindedChannels.find(v => v === _channelName) || _channelName === "Proximity") {
+                    channelName = _channelName
+                }
+            }
         };
         if (socket && socket.readyState === WebSocket.OPEN)
-            socket.send(channel)
+            socket.send(channelName)
     }, 10);
 }
 
