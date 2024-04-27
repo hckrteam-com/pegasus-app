@@ -13,8 +13,7 @@
 <body class="m-4 flex flex-col">
 
   <input id="robloxId" type="number" hidden></input>
-  <input id="pushToTalk" type="checkbox" hidden></input>
-  <input id="pushToTalkRawCode" type="number" value="86" hidden></input>
+  <div id="keybinds"></div>
   <div class="flex justify-center items-center h-20 flex-row">
     <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
   </div>
@@ -50,17 +49,6 @@
       <button hidden
         class="mt-8 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
         id="microphoneContinue">Dalej</button>
-    </div>
-  </div>
-  <div id="keybindingPage" hidden>
-    <div class="flex items-center h-40 flex-col mt-10">
-      <h1 class="text-white mb-4 select-none">Keybinding:</h1>
-      <label class="text-white" for="pushToTalkKeybind">Naciśnij by mówić:</label>
-      <input name="pushToTalkKeybind" id="pushToTalkKeybind" readonly onfocus="this.select()" onmouseup="return false;"
-        type="text" value="V" class="w-16 text-center"></input>
-      <button
-        class="mt-8 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
-        id="keybindingContinue">Dalej</button>
     </div>
   </div>
   <div id="searchingPage" hidden>
@@ -119,12 +107,17 @@
   const ipcRenderer = electron.ipcRenderer;
 
   ipcRenderer.on('keyPressed', (event, [key, pressed]) => {
-    if (key === parseInt(document.getElementById("pushToTalkRawCode").value))
-      document.getElementById("pushToTalk").checked = pressed
+    for (let child of document.getElementById("keybinds").childNodes)
+      if (parseInt(child.value) === parseInt(key))
+        if (pressed) {
+          child.classList.add("talk")
+        } else {
+          child.classList.remove("talk")
+        }
   });
 
   document.getElementById("start").onclick = () => {
-    electron.shell.openExternal('https://pegasus.bot/dashboard-vc')
+    electron.shell.openExternal('https://pegasus.bot/dashboard?referrer=vc')
   }
 
   const onToken = async (token) => {

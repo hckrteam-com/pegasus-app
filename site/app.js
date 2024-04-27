@@ -5,7 +5,6 @@ const main = async () => {
     const microphonePage = document.getElementById("microphonePage")
     const searchingPage = document.getElementById("searchingPage")
     const vcPage = document.getElementById("vcPage")
-    const keybindingPage = document.getElementById("keybindingPage")
 
     let debounce = false;
     let robloxId = parseInt(document.getElementById("robloxId").value)
@@ -31,26 +30,17 @@ const main = async () => {
         localStream = destination.stream
     }
 
-    let muteTimeout
     setInterval(() => {
-        if (document.getElementById("pushToTalk").checked) {
-            if (document.getElementById("mic").classList.contains('hidden')) {
-                document.getElementById("mic").classList.remove("hidden")
-                if (muteTimeout) clearTimeout(muteTimeout)
-                if (muteGain)
-                    muteGain.gain.value = 1;
-            }
-        } else {
-            if (!document.getElementById("mic").classList.contains('hidden')) {
-                document.getElementById("mic").classList.add('hidden')
-                if (muteTimeout) clearTimeout(muteTimeout)
-                if (muteGain) {
-                    muteTimeout = setTimeout(() => {
-                        muteGain.gain.value = 0;
-                    }, 100)
-                }
+        let mute = true
+        for (let child of document.getElementById("keybinds").childNodes) {
+            if (child.classList.contains("talk")) {
+                mute = false
+                break
             }
         }
+        console.log('mute', mute)
+        if (muteGain)
+            muteGain.gain.value = mute ? 0 : 1;
     }, 1)
 
     if (localStorage.getItem("microphoneId")) {
@@ -58,14 +48,6 @@ const main = async () => {
         const microphone = await navigator.mediaDevices.getUserMedia({ "audio": { deviceId: microhponeId } })
         if (microphone) changeLocalStream(microphone)
     }
-
-    if (localStorage.getItem("pushToTalk")) {
-        const [rawcode, key] = localStorage.getItem("pushToTalk").split(",")
-
-        document.getElementById("pushToTalkRawCode").value = parseInt(rawcode)
-        document.getElementById("pushToTalkKeybind").value = key
-    }
-
 
     const createPeer = () => {
         localPeer = new Peer({
@@ -130,7 +112,6 @@ const main = async () => {
         microphonePage.hidden = page == microphonePage ? false : true
         searchingPage.hidden = page == searchingPage ? false : true
         vcPage.hidden = page == vcPage ? false : true
-        keybindingPage.hidden = page == keybindingPage ? false : true
     };
 
     const reset = () => {
@@ -180,11 +161,20 @@ const main = async () => {
         calls[id].audio = audio;
     }
 
-    const updateAudio = (id, position) => {
+    const updateAudio = (id, position, muted, speakingChannel) => {
+        console.log('updateAudio', id, position, muted, speakingChannel)
         if (calls[id] && calls[id].gain && calls[id].panner) {
-            calls[id].panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
-            calls[id].panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
-            calls[id].panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+            const call = calls[id]
+            call.gain.gain.value = muted ? 0 : 1
+            if (speakingChannel === "Proximity") {
+                call.panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
+                call.panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
+                call.panner.positionZ.setValueAtTime(position[2], audioContext.currentTime);
+            } else {
+                call.panner.positionX.setValueAtTime(0, audioContext.currentTime);
+                call.panner.positionY.setValueAtTime(0, audioContext.currentTime);
+                call.panner.positionZ.setValueAtTime(0, audioContext.currentTime);
+            }
         }
     }
 
@@ -277,9 +267,6 @@ const main = async () => {
         };
         debounce = false;
     }
-    document.getElementById("keybindingContinue").onclick = async () => {
-        createPeer()
-    }
 
     document.getElementById("microphoneContinue").onclick = async () => {
         if (debounce) return
@@ -292,7 +279,7 @@ const main = async () => {
                     changeLocalStream(device)
                     muteLocalStream(true)
 
-                    showPage(keybindingPage)
+                    createPeer()
                 }
             } catch { };
 
@@ -301,21 +288,15 @@ const main = async () => {
     }
 
     document.onkeydown = (event) => {
-        if (document.getElementById("pushToTalkKeybind") === document.activeElement) {
-            document.getElementById("pushToTalkRawCode").value = parseInt(event.which)
-            document.getElementById("pushToTalkKeybind").value = event.key.toUpperCase()
-
-            localStorage.setItem("pushToTalk", [parseInt(event.which), event.key.toUpperCase()])
-        }
-
-        console.log(parseInt(event.which), parseInt(document.getElementById("pushToTalkRawCode").value))
-        if (parseInt(event.which) === parseInt(document.getElementById("pushToTalkRawCode").value))
-            document.getElementById("pushToTalk").checked = true
+        for (let child of document.getElementById("keybinds").childNodes)
+            if (parseInt(child.value) === parseInt(event.which))
+                child.classList.add("talk")
     }
 
     document.onkeyup = (event) => {
-        if (parseInt(event.which) === parseInt(document.getElementById("pushToTalkRawCode").value))
-            document.getElementById("pushToTalk").checked = false
+        for (let child of document.getElementById("keybinds").childNodes)
+            if (parseInt(child.value) === parseInt(event.which))
+                child.classList.remove("talk")
     }
 
     setInterval(() => {
@@ -339,19 +320,45 @@ const main = async () => {
                 ws.addEventListener("message", (message) => {
                     const data = JSON.parse(message.data)
                     console.log(data)
-                    showPage(vcPage)
-                    for (let [peerId, { position, type }] of Object.entries(data)) {
-                        if (calls[peerId]) {
-                            updateAudio(peerId, position)
-                        } else if (!calls[peerId] && type === "call") {
-                            console.log('call someone')
-                            calls[peerId] = {}
-                            const call = localPeer.call(peerId, localStream)
-                            call.on("stream", (otherStream) => {
-                                console.log('received call with stream', otherStream)
-                                calls[peerId].call = call;
-                                createAudio(peerId, otherStream)
-                            })
+
+                    if (data.type === "positions") {
+                        showPage(vcPage)
+                        for (let [peerId, { position, type, muted, speakingChannel }] of Object.entries(data.positions)) {
+                            if (calls[peerId]) {
+                                updateAudio(peerId, position, muted, speakingChannel)
+                            } else if (!calls[peerId] && type === "call") {
+                                console.log('call someone')
+                                calls[peerId] = {}
+                                const call = localPeer.call(peerId, localStream)
+                                call.on("stream", (otherStream) => {
+                                    console.log('received call with stream', otherStream)
+                                    calls[peerId].call = call;
+                                    createAudio(peerId, otherStream)
+                                })
+                                call.on("close", () => {
+                                    removeAudio(call.peer)
+                                })
+                            }
+                        }
+                        for (let [peerId, callData] of Object.entries(calls)) {
+                            if (!Object.keys(data.positions).find(v => v === peerId)) {
+                                callData.call.close()
+                            }
+                        }
+
+                        if (data.keybinds) {
+                            for (let [channel, keybind] of Object.entries(data.keybinds)) {
+                                if (document.getElementById(`keybind-${channel}`)) {
+                                    document.getElementById(`keybind-${channel}`).value = keybind
+                                } else {
+                                    const input = document.createElement("input")
+                                    input.hidden = true
+                                    input.id = `keybind-${channel}`
+                                    input.type = "number"
+                                    input.value = keybind
+                                    document.getElementById("keybinds").append(input)
+                                }
+                            }
                         }
                     }
                 });
@@ -370,8 +377,12 @@ const main = async () => {
         }
     }, 5000);
     setInterval(() => {
+        let channel;
+        for (let child of document.getElementById("keybinds").childNodes) {
+            if (child.classList.contains("talk")) { channel = child.id.replace("keybind-", "") }
+        };
         if (socket && socket.readyState === WebSocket.OPEN)
-            socket.send(document.getElementById("pushToTalkRawCode").value)
+            socket.send(channel)
     }, 100);
 }
 
