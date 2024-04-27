@@ -41,7 +41,7 @@ const main = async () => {
         console.log('mute', mute)
         if (muteGain)
             muteGain.gain.value = mute ? 0 : 1;
-    }, 1)
+    }, 10)
 
     if (localStorage.getItem("microphoneId")) {
         const microhponeId = localStorage.getItem("microphoneId")
@@ -383,7 +383,7 @@ const main = async () => {
         };
         if (socket && socket.readyState === WebSocket.OPEN)
             socket.send(channel)
-    }, 100);
+    }, 10);
 }
 
 let startId = setInterval(() => {
