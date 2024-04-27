@@ -165,7 +165,7 @@ const main = async () => {
         console.log('updateAudio', id, position, speakingChannel)
         if (calls[id] && calls[id].gain && calls[id].panner) {
             const call = calls[id]
-            call.gain.gain.value = speakingChannel === undefined ? 0 : 1
+            call.gain.gain.value = speakingChannel === "undefined" ? 0 : 1
             if (speakingChannel === "Proximity") {
                 call.panner.positionX.setValueAtTime(position[0], audioContext.currentTime);
                 call.panner.positionY.setValueAtTime(position[1], audioContext.currentTime);
