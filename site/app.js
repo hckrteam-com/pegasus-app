@@ -375,6 +375,11 @@ const main = async () => {
                     const data = JSON.parse(message.data)
                     console.log(data)
 
+                    if(data.placeId) {
+                        //actualPlaceId = data.placeId
+                        updatePlaceId(data.placeId)
+                    }
+
                     if (data.type === "positions") {
                         showPage(vcPage)
                         for (let [peerId, { position, type, speakingChannels }] of Object.entries(data.positions)) {
@@ -459,3 +464,62 @@ let startId = setInterval(() => {
         main();
     }
 }, 100)
+
+
+
+let actualPlaceId = ""
+let actualUniverseId = ""
+
+async function updatePlaceId(placeId) {
+    console.log(placeId)
+    if (!placeId) return
+    if (actualPlaceId !== placeId) {
+        actualPlaceId = placeId
+
+        console.log('updatePlaceId', placeId)
+
+
+        let universeId = await getUniverseId(placeId)
+        if(!universeId) return
+
+        actualUniverseId = universeId
+        console.log('updateUniverseId', universeId)
+
+        let placeData = await getPlaceData(universeId)
+        if(!placeData) return
+
+        console.log('updatePlaceData', placeData)
+
+    }
+}
+
+async function getUniverseId(place_id){
+    let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
+    .then(response => response.json())
+    .then(data => {
+
+      if(!data) return false
+      if(!data.universeId) return false
+
+      return data.universeId
+    })
+    .catch(err => {
+      console.log(err)
+    })
+    return response
+  }
+  
+
+  async function getPlaceData(universe_id){
+    let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
+    .then(response => response.json())
+    .then(data => {
+      //console.log(data)
+      return data.data[0]
+    })
+    .catch(err => {
+      console.log(err)
+    })
+    return response
+  }
+  
