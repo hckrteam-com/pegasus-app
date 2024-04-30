@@ -1,12 +1,12 @@
 {
   "name": "pegasus-vc",
   "author": {
-    "name": "Dawidooss",
-    "url": "https://pegasus.bot"
+    "name": "hckrteam",
+    "url": "https://hckrteam.com"
   },
-  "productName": "Pegasus VC",
+  "productName": "Pegasus APP",
   "version": "1.0.0",
-  "description": "Pegasus VC",
+  "description": "Pegasus APP",
   "main": "index.js",
   "scripts": {
     "start": "electron-forge start",
@@ -15,7 +15,7 @@
     "publish": "electron-forge publish"
   },
   "build": {
-    "appId": "vc-electron",
+    "appId": "pegasus-app",
     "win": {
       "target": [
         "nsis"
@@ -25,13 +25,13 @@
     "nsis": {
       "installerIcon": "icons/pegasus.ico",
       "uninstallerIcon": "icons/pegasus.ico",
-      "uninstallDisplayName": "Pegasus VC Uninstaller",
+      "uninstallDisplayName": "Pegasus APP Uninstaller",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     }
   },
   "keywords": [],
-  "license": "MIT",
+  "license": "UNLICENSED",
   "config": {
     "forge": {
       "packagerConfig": {
