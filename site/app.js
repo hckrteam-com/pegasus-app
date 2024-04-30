@@ -472,12 +472,11 @@ let actualUniverseId = ""
 
 async function updatePlaceId(placeId) {
     console.log(placeId)
-    if (!placeId) return
     if (actualPlaceId !== placeId) {
         actualPlaceId = placeId
 
         console.log('updatePlaceId', placeId)
-
+        if (!placeId) return updateRPC(false)
 
         let universeId = await getUniverseId(placeId)
         if(!universeId) return
@@ -489,6 +488,8 @@ async function updatePlaceId(placeId) {
         if(!placeData) return
 
         console.log('updatePlaceData', placeData)
+
+        updateRPC(placeData)
 
     }
 }
@@ -523,3 +524,22 @@ async function getUniverseId(place_id){
     return response
   }
   
+
+  async function updateRPC(placeData) {
+
+    const result = await fetch('http://localhost:3000/api/rpc', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        placeData
+      })
+    }).then((res) => res.json())
+    console.log(result)
+    if (result.success == true) {
+
+    } else {
+      alert(result.error)
+    }
+  }
