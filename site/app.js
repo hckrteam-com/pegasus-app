@@ -527,7 +527,7 @@ async function getPlaceData(universe_id) {
 
 async function updateRPC(placeData) {
 
-    const result = await fetch('http://localhost:3000/api/rpc', {
+    const result = await fetch('http://localhost:4582/api/rpc', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

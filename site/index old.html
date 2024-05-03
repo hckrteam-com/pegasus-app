@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="output.css">
+    <link rel="shortcut icon" type="image/x-icon" href="https://pegasus.bot/images/favicon.ico">
+</head>
+<body class="bg-[#0B0A0A]">
+    
+    <div class="overflow-hidden max-w-[100vw]">
+
+        <img id="gradient" class="absolute h-[100vh] w-[100vw] max-w-[150vw] inset-0 overflow-hidden animate-gradient opacity-75" src="./images/polar2.png" alt="Grid">
+
+        <img class="mt-[5vh] mb-[5vh] h-[90vh]  inset-0 mx-auto" src="./images/grid-3b6a3aa3.svg" alt="Grid">
+
+
+        <img id="logo" class=" animate-logo absolute h-[30vh]  inset-0 my-auto mx-auto" src="./images/single-pegasus-logo.svg" alt="Pegasus Logo">
+
+        <loading id="loading-frame" class="animate-frame absolute w-[100vw]">
+
+
+            <img class=" inset-0 mx-auto w-[55vh]" src="./images/hckrteam-pegasus.svg" alt="Grid">
+
+
+            <div class="w-full text-center text-white text-2xl font-semibold my-[2vh] mb-[5vh]">Wyszukiwanie Serwera</div>
+
+            <img class="h-[8.5vh] inset-0 mx-auto loading-icon spin" src="./images/loading-icon.svg" alt="Grid">
+
+
+            <p class="mx-[18vw] text-center font-semibold mt-[15vh] text-[#ffffff]/50">
+                Dołącz na serwer z podpiętym naszym systemem vc
+            </p>
+            
+        </loading>
+
+    </div>
+
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoAnimation1 {
+            0% {
+                transform: translateY(250%);
+            }
+            25% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-90%);
+            }
+        }
+
+        @keyframes frameAnimation {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-110%);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+                transform: opacity(1);
+            }
+            100% {
+                transform: rotate(360deg);
+                transform: opacity(1);
+            }
+        }
+        
+        .animate-gradient {
+            animation: gradientAnimation 1s ease-in-out;
+        }
+
+        .animate-logo {
+            transform: translateY(250%);
+            animation: logoAnimation1 4s ease-in-out;
+            animation-delay: 1s;
+            animation-fill-mode: forwards;
+        }
+
+        .animate-frame {
+            animation: frameAnimation 1s ease-in-out;
+            animation-delay: 4s;
+            animation-fill-mode: forwards;
+        }
+
+        .loading-icon {
+            animation: spin 1.5s linear infinite;
+            animation-delay: 5s;
+            animation-fill-mode: forwards;
+        }
+
+    </style>
+
+</body>
+</html>
+

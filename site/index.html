@@ -1,116 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html style="background-color: rgb(24 24 27);">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="output.css">
-    <link rel="shortcut icon" type="image/x-icon" href="https://pegasus.bot/images/favicon.ico">
+  <meta charset="UTF-8">
+  <title>Pegasus RPC</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- <script src="index.js" type="module" defer></script> -->
+  <script src="noise-gate.min.js"></script>
 </head>
-<body class="bg-[#0B0A0A]">
-    
-    <div class="overflow-hidden max-w-[100vw]">
 
-        <img id="gradient" class="absolute h-[100vh] w-[100vw] max-w-[150vw] inset-0 overflow-hidden animate-gradient opacity-75" src="./images/polar2.png" alt="Grid">
+<body class="m-4 flex flex-col">
 
-        <img class="mt-[5vh] mb-[5vh] h-[90vh]  inset-0 mx-auto" src="./images/grid-3b6a3aa3.svg" alt="Grid">
+  <input id="robloxId" type="number" hidden></input>
+  <div id="keybinds"></div>
+  <div class="flex justify-center items-center h-20 flex-row">
+    <h1 class="text-white text-3xl font-medium select-none">Pegasus VoiceChat</h1>
+  </div>
 
-
-        <img id="logo" class=" animate-logo absolute h-[30vh]  inset-0 my-auto mx-auto" src="./images/single-pegasus-logo.svg" alt="Pegasus Logo">
-
-        <loading id="loading-frame" class="animate-frame absolute w-[100vw]">
-
-
-            <img class=" inset-0 mx-auto w-[55vh]" src="./images/hckrteam-pegasus.svg" alt="Grid">
-
-
-            <div class="w-full text-center text-white text-2xl font-semibold my-[2vh] mb-[5vh]">Wyszukiwanie Serwera</div>
-
-            <img class="h-[8.5vh] inset-0 mx-auto loading-icon spin" src="./images/loading-icon.svg" alt="Grid">
-
-
-            <p class="mx-[18vw] text-center font-semibold mt-[15vh] text-[#ffffff]/50">
-                Dołącz na serwer z podpiętym naszym systemem vc
-            </p>
-            
-        </loading>
-
+  <div id="loginPage">
+    <div class="flex justify-center items-center h-40 flex-col">
+      <p class="text-white text-xl">Próba logowania...</p>
     </div>
+  </div>
 
-    <style>
-        body {
-            overflow: hidden;
-        }
+  <div id="startPage" hidden>
+    <div class="flex justify-center items-center h-40 flex-col">
+      <!-- <h1 class="text-white mb-4 select-none">Podaj RobloxID:</h1> -->
+      <!-- <input id="robloxId"
+        class="bg-darkgray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        type="text">
+      </input>
+      <button class="mt-4 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200"
+        id="start">Rozpocznij</button> -->
+      <button class="mt-4 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200" id="start">Zaloguj
+        się</button>
+    </div>
+  </div>
 
-        @keyframes gradientAnimation {
-            0% {
-                transform: translateY(-100%);
-            }
-            100% {
-                transform: translateY(0);
-            }
-        }
+  <div id="microphonePage" hidden>
+    <div class="flex items-center h-40 flex-col mt-10">
+      <h1 class="text-white mb-4 select-none">Wybierz mikrofon:</h1>
+      <select id="microphones"
+        class="bg-darkgray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-64 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option>Nie wybrano</option>
+        <option>USB 1</option>
+      </select>
+      <button
+        class="mt-2 py-1 px-4 text-md rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
+        id="microphoneTest" hidden>Testuj mikrofon</button>
+      <button hidden
+        class="mt-8 py-2 px-8 text-lg rounded bg-purple-500 hover:bg-purple-700 text-slate-200 disabled:bg-purple-900"
+        id="microphoneContinue">Dalej</button>
+    </div>
+  </div>
+  
+  <div id="searchingPage" hidden class="bg-[#0B0A0A]">
+    <div class="flex justify-center items-center h-72 flex-col">
+      <h1 class="text-white mb-4 select-none">Wyszukiwanie serwera...</h1>
+      <svg class="circular-loader w-10 h-10" viewBox="25 25 50 50">
+        <circle class="loader-path" cx="50" cy="50" r="20" fill="none" stroke="#70c542" stroke-width="2" />
+      </svg>
+      <h1 class="text-white mb-4 text-sm opacity-15 text-center mt-4 select-none">Dołącz na serwer z podpiętym naszym
+        systemem VC
+      </h1>
+    </div>
+  </div>
 
-        @keyframes logoAnimation1 {
-            0% {
-                transform: translateY(250%);
-            }
-            25% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-90%);
-            }
-        }
+  <div id="searchingPageold" hidden>
+    <div class="flex justify-center items-center h-72 flex-col">
+      <h1 class="text-white mb-4 select-none">Wyszukiwanie serwera...</h1>
+      <svg class="circular-loader w-10 h-10" viewBox="25 25 50 50">
+        <circle class="loader-path" cx="50" cy="50" r="20" fill="none" stroke="#70c542" stroke-width="2" />
+      </svg>
+      <h1 class="text-white mb-4 text-sm opacity-15 text-center mt-4 select-none">Dołącz na serwer z podpiętym naszym
+        systemem VC
+      </h1>
+    </div>
+  </div>
 
-        @keyframes frameAnimation {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-110%);
-            }
-        }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-                transform: opacity(1);
-            }
-            100% {
-                transform: rotate(360deg);
-                transform: opacity(1);
-            }
-        }
-        
-        .animate-gradient {
-            animation: gradientAnimation 1s ease-in-out;
-        }
-
-        .animate-logo {
-            transform: translateY(250%);
-            animation: logoAnimation1 4s ease-in-out;
-            animation-delay: 1s;
-            animation-fill-mode: forwards;
-        }
-
-        .animate-frame {
-            animation: frameAnimation 1s ease-in-out;
-            animation-delay: 4s;
-            animation-fill-mode: forwards;
-        }
-
-        .loading-icon {
-            animation: spin 1.5s linear infinite;
-            animation-delay: 5s;
-            animation-fill-mode: forwards;
-        }
-
-    </style>
-
+  <div id="vcPage" hidden>
+    <div class="h-6 flex justify-end m-4 absolute top-0 right-0 hidden" id="mic">
+      <svg fill="#ffffff" class="w-6 h-6 absolute" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 410.414 410.414" xml:space="preserve">
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+        <g id="SVGRepo_iconCarrier">
+          <g>
+            <path
+              d="M323.14,148.583c-5.523,0-10,4.477-10,10v53.789c0,63.615-55.755,86.282-107.934,86.282S97.273,275.987,97.273,212.372 v-53.789c0-5.523-4.477-10-10-10s-10,4.477-10,10v53.789c0,33.888,13.334,61.751,38.561,80.58 c20.407,15.231,47.703,23.932,79.373,25.441v72.022h-61.52c-5.523,0-10,4.477-10,10s4.477,10,10,10h143.039c5.523,0,10-4.477,10-10 s-4.477-10-10-10h-61.52v-72.022c31.67-1.508,58.966-10.21,79.373-25.441c25.227-18.828,38.561-46.692,38.561-80.58v-53.789 C333.14,153.06,328.663,148.583,323.14,148.583z">
+            </path>
+            <path
+              d="M138.642,267.736c16.35,10.689,38.746,16.109,66.565,16.109s50.215-5.42,66.565-16.109 c19.517-12.76,29.833-33.036,29.833-58.637V85.573C301.606,35.189,261.965,0,205.207,0c-56.758,0-96.398,35.189-96.398,85.573 v123.526C108.808,234.7,119.125,254.976,138.642,267.736z M205.207,20c38.028,0,76.399,20.276,76.399,65.573v9.207h-40.312 c-5.523,0-10,4.477-10,10s4.477,10,10,10h40.312v23.305h-40.312c-5.523,0-10,4.477-10,10s4.477,10,10,10h40.312v23.305h-40.312 c-5.523,0-10,4.477-10,10s4.477,10,10,10h40.312v7.71c0,19.052-6.796,32.756-20.778,41.897 c-12.857,8.406-32.091,12.849-55.621,12.849s-42.763-4.443-55.621-12.849c-13.981-9.141-20.777-22.845-20.777-41.897v-7.71h40.312 c5.523,0,10-4.477,10-10s-4.477-10-10-10h-40.312v-23.305h40.312c5.523,0,10-4.477,10-10s-4.477-10-10-10h-40.312V114.78h40.312 c5.523,0,10-4.477,10-10s-4.477-10-10-10h-40.312v-9.207C128.808,40.276,167.179,20,205.207,20z">
+            </path>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="flex justify-center items-center text-center flex-col">
+      <h1 class="text-white mb-4 select-none">Poprawnie połączono z kanałem głosowym :)</h1>
+    </div>
+  </div>
+  <div class="h-6 flex justify-end m-4 absolute bottom-0 right-0" id="stopka">
+    <svg class="w-6 h-6 cursor-pointer absolute" fill="#ccc" version="1.1" id="config"
+      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455"
+      xml:space="preserve">
+      <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+      <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+      <g id="SVGRepo_iconCarrier">
+        <path
+          d="M455,257v-70h-63.174c-4.423-20.802-12.706-40.174-24.066-57.334l42.32-42.32l-49.498-49.498l-42.756,42.756 C299.911,69.199,279.682,61.104,258,57.183V0h-70v59.319c-21.306,5.221-41.009,14.515-58.24,27.014L88.346,44.92L38.849,94.417 l43.979,43.979C72.59,156.135,65.513,175.926,62.359,197H0v70h66.623c5.396,19.392,14.195,37.364,25.711,53.24L45.92,366.654 l49.497,49.498l48.979-48.979c16.329,9.424,34.397,16.171,53.604,19.645V455h70v-70.319c18.91-4.634,36.557-12.476,52.334-22.92 l47.32,47.32l49.498-49.498l-47.756-47.756c10.524-16.531,18.223-35.033,22.431-54.827H455z M228,309.5 c-48.248,0-87.5-39.252-87.5-87.5s39.252-87.5,87.5-87.5s87.5,39.252,87.5,87.5S276.248,309.5,228,309.5z">
+        </path>
+      </g>
+    </svg>
+  </div>
+  <audio id="localStream" autoplay muted></audio>
+  <div id="audios">
+  </div>
 </body>
-</html>
 
+<script defer>
+  const electron = require('electron');
+  const ipcRenderer = electron.ipcRenderer;
+
+  ipcRenderer.on('keyPressed', (event, [key, pressed]) => {
+    for (let child of document.getElementById("keybinds").childNodes)
+      if (parseInt(child.value) === parseInt(key))
+        if (pressed) {
+          child.classList.add("talk")
+        } else {
+          child.classList.remove("talk")
+        }
+  });
+
+  document.getElementById("start").onclick = () => {
+    electron.shell.openExternal('https://pegasus.bot/dashboard?referrer=vc')
+  }
+
+  const onToken = async (token) => {
+    let req = await fetch(`https://api.hckrteam.com/v1/oauth/pegasus/dashboard`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    let res = await req.json()
+
+    if (res.success) {
+      document.getElementById('robloxId').value = res.data.roblox_id
+      localStorage.setItem('token', token)
+      return true
+    }
+    localStorage.removeItem("token")
+    return false
+  }
+
+  ipcRenderer.on('token', (event, token) => {
+    onToken(token)
+  });
+  if (localStorage.getItem("token")) {
+    onToken(localStorage.getItem("token")).then((suc) => {
+      document.getElementById("loginPage").hidden = true
+      if (!suc) document.getElementById("startPage").hidden = false
+    })
+  } else {
+    document.getElementById("loginPage").hidden = true
+    document.getElementById("startPage").hidden = false
+  }
+</script>
+<script defer type="module" src="app.js"></script>
+
+</html>
