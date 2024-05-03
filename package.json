@@ -64,12 +64,13 @@
   "dependencies": {
     "audio-effects": "^1.2.4",
     "electron-iohook": "^0.1.2",
+    "electron-packager": "^17.1.2",
     "electron-squirrel-startup": "^1.0.0",
+    "express": "^3.19.2",
     "fetch": "^1.1.0",
     "make-fetch-happen": "^13.0.0",
     "node-fetch": "^3.3.2",
-    "rich-presence-builder": "^0.1.1",
-    "express": "^3.19.2"
+    "rich-presence-builder": "^0.1.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
