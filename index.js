@@ -4,7 +4,7 @@ const ioHook = require("electron-iohook").default
 const fetch = require('make-fetch-happen')
 
 //me
-const RichPresence = require("rich-presence-builder")
+const RichPresence = require("./RichPresenceBuilder/index.js")
 const express = require('express')
 const server = express();
 
@@ -120,62 +120,62 @@ app.on("window-all-closed", () => {
 const clientid = "776903824567697478"
 const RPC = new RichPresence({ clientID: clientid })
 
+
 server.use(express.json())
 
 server.post('/api/rpc', async (req, res) => {
 
-  const { placeData } = req.body;
+    const { placeData } = req.body;
 
-  if(!placeData) return await RPC.clear()
+    if (!placeData) return await RPC.clear()
 
 
-  let largeimage = "placeholder_game_logo"
-  let smallimage = "icon-pegasus"
-  let state = "0 Players"
-  let details = "Playing Example Game"
+    let largeimage = "placeholder_game_logo"
+    let smallimage = "icon-pegasus"
+    let state = "0 Players"
+    let details = "Playing Example Game"
 
-  if (largeimage === "placeholder_game_logo") {
-    smallimage = ""
-  }
-
-  let universe_id
-
-  let gamename = ""
-  let players = 0
-  
-  if (placeData) {
-    console.log(await placeData)
-    await res.send({success: true, data: { universe_id, placeData }})
-
-    if (placeData.name.includes(']')) {
-      console.log(placeData.name)
-      gamename = placeData.name.split(']')[1]
-    }else{
-      gamename = placeData.name
-    }
-    players = placeData.playing
-
-    if(players == 0){
-        players = 1
+    if (largeimage === "placeholder_game_logo") {
+        smallimage = ""
     }
 
-    details = "Playing " + gamename
-    state = players.toString() + " Players"
-  }
+    let universe_id
 
-  RPC.setLargeImage(largeimage, "pegasus.bot")
-  RPC.setSmallImage(smallimage, "https://pegasus.bot")
-  RPC.setState(state)
-  RPC.setDetails(details)
-  RPC.setStartTimestamp(Date.now())
-  RPC.addButton("Game", "roblox://placeId="+placeData.id.toString())
-  RPC.addButton("Discord", "https://hckrteam.com")
-  RPC.go()
+    let gamename = ""
+    let players = 0
+
+    if (placeData) {
+        console.log(await placeData)
+        await res.send({ success: true, data: { universe_id, placeData } })
+
+        if (placeData.name.includes(']')) {
+            console.log(placeData.name)
+            gamename = placeData.name.split(']')[1]
+        } else {
+            gamename = placeData.name
+        }
+        players = placeData.playing
+
+        if (players == 0) {
+            players = 1
+        }
+
+        details = "Playing " + gamename
+        state = players.toString() + " Players"
+    }
+
+    RPC.setLargeImage(largeimage, "pegasus.bot")
+    RPC.setSmallImage(smallimage, "https://pegasus.bot")
+    RPC.setState(state)
+    RPC.setDetails(details)
+    RPC.setStartTimestamp(Date.now())
+    RPC.addButton("Game", "roblox://placeId=" + placeData.id.toString())
+    RPC.addButton("Discord", "https://hckrteam.com")
+    RPC.go()
 
 })
 
 
 server.listen(3000, () => {
     console.log('Listening at http://localhost:3000')
-  })
-  
+})
