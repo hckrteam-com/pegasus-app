@@ -35,7 +35,6 @@ const createWindow = () => {
         webPreferences: {
             "contextIsolation": false,
             "nodeIntegration": true,
-            "additionalArguments": ['--use-fake-ui-for-media-stream']
         },
     });
 
@@ -43,10 +42,10 @@ const createWindow = () => {
     mainWindow.loadFile(path.join(__dirname, "./site/index.html"));
     // Open the DevTools.
     mainWindow.webContents.openDevTools({
-        mode: "detach",
+        mode: "",
     });
 
-    mainWindow.removeMenu()
+    // mainWindow.removeMenu()
 
     if (!gotTheLock) {
         app.quit()

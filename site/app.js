@@ -375,7 +375,7 @@ const main = async () => {
                     const data = JSON.parse(message.data)
                     console.log(data)
 
-                    if(data.placeId) {
+                    if (data.placeId) {
                         //actualPlaceId = data.placeId
                         updatePlaceId(data.placeId)
                     }
@@ -479,13 +479,13 @@ async function updatePlaceId(placeId) {
         if (!placeId) return updateRPC(false)
 
         let universeId = await getUniverseId(placeId)
-        if(!universeId) return
+        if (!universeId) return
 
         actualUniverseId = universeId
         console.log('updateUniverseId', universeId)
 
         let placeData = await getPlaceData(universeId)
-        if(!placeData) return
+        if (!placeData) return
 
         console.log('updatePlaceData', placeData)
 
@@ -494,52 +494,52 @@ async function updatePlaceId(placeId) {
     }
 }
 
-async function getUniverseId(place_id){
+async function getUniverseId(place_id) {
     let response = await fetch(`https://apis.roblox.com/universes/v1/places/${place_id}/universe`)
-    .then(response => response.json())
-    .then(data => {
+        .then(response => response.json())
+        .then(data => {
 
-      if(!data) return false
-      if(!data.universeId) return false
+            if (!data) return false
+            if (!data.universeId) return false
 
-      return data.universeId
-    })
-    .catch(err => {
-      console.log(err)
-    })
+            return data.universeId
+        })
+        .catch(err => {
+            console.log(err)
+        })
     return response
-  }
-  
+}
 
-  async function getPlaceData(universe_id){
+
+async function getPlaceData(universe_id) {
     let response = fetch(`https://games.roblox.com/v1/games?universeIds=${universe_id}`)
-    .then(response => response.json())
-    .then(data => {
-      //console.log(data)
-      return data.data[0]
-    })
-    .catch(err => {
-      console.log(err)
-    })
+        .then(response => response.json())
+        .then(data => {
+            //console.log(data)
+            return data.data[0]
+        })
+        .catch(err => {
+            console.log(err)
+        })
     return response
-  }
-  
+}
 
-  async function updateRPC(placeData) {
+
+async function updateRPC(placeData) {
 
     const result = await fetch('http://localhost:3000/api/rpc', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        placeData
-      })
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            placeData
+        })
     }).then((res) => res.json())
     console.log(result)
     if (result.success == true) {
 
     } else {
-      alert(result.error)
+        alert(result.error)
     }
-  }
+}
