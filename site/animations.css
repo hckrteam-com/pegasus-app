@@ -1,0 +1,53 @@
+
+body {
+    overflow: hidden;
+}
+
+@keyframes gradientAnimation {
+  0% {
+      transform: translateY(-100%);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+@keyframes logoAnimation1 {
+  0% {
+      transform: translateY(350%);
+  }
+
+  50% {
+      transform: translateY(22.5vh);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+@keyframes frameAnimation {
+  0% {
+      transform: translateY(110%);
+  }
+  100% {
+      transform: translateY(0);
+  }
+}
+
+.animate-gradient {
+  animation: gradientAnimation 1s ease-in-out;
+}
+
+.animate-logo {
+  transform: translateY(350%);
+  animation: logoAnimation1 4s ease-in-out;
+  animation-delay: 1s;
+  animation-fill-mode: forwards;
+}
+
+.animate-frame {
+  transform: translateY(110%);
+  animation: frameAnimation 1s ease-in-out;
+  animation-delay: 4s;
+  animation-fill-mode: forwards;
+}
