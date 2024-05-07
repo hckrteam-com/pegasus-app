@@ -10,7 +10,7 @@
 
   <link rel="stylesheet" href="output.css">
 
-  <!-- <link rel="stylesheet" href="animations.css"> -->
+  <link rel="stylesheet" href="animations.css">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- <script src="index.js" type="module" defer></script> -->
@@ -54,6 +54,16 @@
   </div>
 
   <style>
+
+    html {
+      overflow: hidden;
+    }
+
+    .pointer-events-none {
+        pointer-events: none !important;
+    }
+
+
     .loading-icon {
       animation: spin 1.5s linear infinite;
       animation-fill-mode: forwards;
@@ -72,7 +82,7 @@
   </style>
 
   
-  <div id="searchingPage" class="bg-[#0B0A0A]" style="overflow: hidden;">
+  <div id="searchingPage" class="pointer-events-none bg-[#0B0A0A]" style="overflow: hidden;">
 
     <div class="overflow-hidden max-w-[100vw]">
 

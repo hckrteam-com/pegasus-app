@@ -21,7 +21,7 @@
         <loading id="loading-frame" class="animate-frame absolute w-[100vw]">
 
 
-            <img class=" inset-0 mx-auto w-[55vh]" src="./images/hckrteam-pegasus.svg" alt="Grid">
+            <img class=" inset-0 mx-auto w-[55vh] pointer-events-none" src="./images/hckrteam-pegasus.svg" alt="Grid">
 
 
             <div class="w-full text-center text-white text-2xl font-semibold my-[2vh] mb-[5vh]">Wyszukiwanie Serwera</div>
@@ -40,6 +40,11 @@
     <style>
         body {
             overflow: hidden;
+            pointer-events: none !important;
+        }
+
+        .pointer-events-none {
+            pointer-events: none !important;
         }
 
         @keyframes gradientAnimation {

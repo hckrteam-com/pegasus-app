@@ -55,8 +55,10 @@ const main = async () => {
 
     const createPeer = () => {
         localPeer = new Peer({
-            host: "167.235.229.141",
-            port: "9876",
+            // host: "167.235.229.141",
+            // port: "9876",
+            host: "peer.pegasus.bot",
+            port: "80",
             ssl: false,
             config: {
                 iceServers: [
@@ -357,7 +359,7 @@ const main = async () => {
         if (!searchingPage.hidden && localPeer) {
             if (!socket) {
 
-                const url = new URL("ws://167.235.229.141:3004")
+                const url = new URL("wss://socket.pegasus.bot")
                 url.search = new URLSearchParams({
                     robloxId,
                     peerId: localPeer.id

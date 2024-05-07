@@ -29,8 +29,8 @@ const createWindow = () => {
     const mainWindow = new BrowserWindow({
         width: 350,
         height: 500,
-        resizable: false,
-        autoHideMenuBar: true,
+        resizable: true,
+        autoHideMenuBar: false,
         icon: iconPath,
         webPreferences: {
             "contextIsolation": false,
